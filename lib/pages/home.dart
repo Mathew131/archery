@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:archery/data/di.dart';
+import 'package:archery/data/table_data.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,46 +16,59 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Все записи'),
         centerTitle: true,
         backgroundColor: Colors.deepOrangeAccent,
       ),
-      body: ListView.builder(
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () => Navigator.pushNamed(context, '/table'),
-                    child: Text(
-                      notes[index],
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black),
+      body: Stack(children: [
+        Center(
+          child: Opacity(
+          opacity: 0.85,
+            child: Image.asset(
+              'assets/arch.jpg',
+              width: 300,
+              height: 300,
+            ),
+          ),
+        ),
+        ListView.builder(
+          itemCount: notes.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orangeAccent,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () => Navigator.pushNamed(context, '/table', arguments: notes[index],),
+                      child: Text(
+                        notes[index],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      notes.removeAt(index);
-                    });
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                  SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        notes.removeAt(index);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ]),
 
 
       floatingActionButton: FloatingActionButton(
@@ -77,6 +92,7 @@ class _HomeState extends State<Home> {
                     onPressed: () {
                       setState(() {
                         notes.add(name_note);
+                        sl<TableData>().createTable(name_note);
                       });
 
                       Navigator.of(context).pop();

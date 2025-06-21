@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:archery/pages/home.dart';
 import 'package:archery/pages/table.dart';
+import 'package:archery/data/di.dart';
 
-void main() => runApp(MaterialApp(
-  initialRoute: '/',
-  routes: {
-    '/': (context) => Home(),
-    '/table': (context) => TablePage(),
-  }
-));
+void main() async {
+  setupDI();
+  runApp(MaterialApp(
+      initialRoute: '/',
+      routes: {
+        '/': (context) => Home(),
+        '/table': (context) => TablePage(),
+      }
+  ));
+}
