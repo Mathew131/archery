@@ -14,6 +14,17 @@ class _HomeState extends State<Home> {
   String name_note = '';
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      await sl<TableData>().load();
+      setState(() {
+        notes = sl<TableData>().getNotes();
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -59,6 +70,7 @@ class _HomeState extends State<Home> {
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
                       setState(() {
+                        sl<TableData>().removeTable(notes[index]);
                         notes.removeAt(index);
                       });
                     },
