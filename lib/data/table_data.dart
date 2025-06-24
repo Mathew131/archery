@@ -4,25 +4,34 @@ import 'dart:convert';
 
 class TableData extends ChangeNotifier {
   final tables = <String, List<List<List<int>>>>{};
-  int cnt = 10;
+  late int cnt_ser;
+  late int cnt_shoot;
 
-  void removeTable(String id) {
-    tables.remove(id);
+  void removeTable(String name_note) {
+    tables.remove(name_note);
     save();
   }
 
-  void createTable(String id) {
-    tables[id] = List.generate(2, (_) => List.generate(cnt, (_) => List.filled(cnt, -1)));
+  void createTable(String name_note) {
+    if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
+      cnt_ser = 10;
+      cnt_shoot = 3;
+    } else {
+      cnt_ser = 6;
+      cnt_shoot = 6;
+    }
+    
+    tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
     notifyListeners();
     save();
   }
 
-  List<List<List<int>>> getTable(String id) {
-    return tables[id] ?? List.generate(2, (_) => List.generate(cnt, (_) => List.filled(cnt, -1)));
+  List<List<List<int>>> getTable(String name_note) {
+    return tables[name_note]!;
   }
 
-  void updateTable(String id, List<List<List<int>>> table) {
-    tables[id] = table;
+  void updateTable(String name_note, List<List<List<int>>> table) {
+    tables[name_note] = table;
     notifyListeners();
     save();
   }
