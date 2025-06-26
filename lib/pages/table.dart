@@ -46,12 +46,22 @@ class _TablePageState extends State<TablePage> {
 
     sumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
       final value = val[table][i][cnt_shoot];
-      return TextEditingController(text: value != -1 ? value.toString() : '');
+      for (int z = 0; z < cnt_shoot; ++z) {
+        if (val[table][i][z] != -1) {
+          return TextEditingController(text: value.toString());
+        }
+      }
+      return TextEditingController(text: '');
     }));
 
     sumSumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
       final value = val[table][i][cnt_shoot+1];
-      return TextEditingController(text: value != -1 ? value.toString() : '');
+      for (int z = 0; z < cnt_shoot; ++z) {
+        if (val[table][i][z] != -1) {
+          return TextEditingController(text: value.toString());
+        }
+      }
+      return TextEditingController(text: '');
     }));
 
     inputControllers = List.generate(2, (table) =>
@@ -98,10 +108,26 @@ class _TablePageState extends State<TablePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(name_note.substring(0, name_note.indexOf('_'))),
-        centerTitle: true,
-        backgroundColor: Colors.orangeAccent,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(56),
+        child: Container( // extra container for custom bottom shadows
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.2),
+                spreadRadius: 3,
+                blurRadius: 3,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Text(name_note.substring(0, name_note.indexOf('_'))),
+            centerTitle: true,
+            backgroundColor: Color(0xFFffbf69),
+            scrolledUnderElevation: 0,
+          ),
+        ),
       ),
       body: SafeArea(
           child: SingleChildScrollView(
@@ -172,26 +198,42 @@ class _TablePageState extends State<TablePage> {
                                                       int n = int.tryParse(v) ?? -1;
                                                       setState(() {
                                                         val[table][i][j] = n;
-                                                        bool flag = true;
                                                         int sum = 0;
                                                         for (int k = 0; k < cnt_shoot; ++k) {
                                                           sum += val[table][i][k];
-                                                          if (val[table][i][k] == -1) {
-                                                            flag = false;
-                                                          }
+                                                          if (val[table][i][k] == -1) sum += 1;
                                                         }
-                                                        if (flag) {
-                                                          val[table][i][cnt_shoot] = sum;
-                                                          if (i == 0) {
-                                                            val[table][i][cnt_shoot+1] = val[table][i][cnt_shoot];
+
+                                                        val[table][i][cnt_shoot] = sum;
+                                                        for (int z = 0; z < cnt_ser; ++z) {
+                                                          if (z == 0) {
+                                                            val[table][z][cnt_shoot+1] = val[table][z][cnt_shoot];
+                                                            if (val[table][z][cnt_shoot] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
                                                           } else {
-                                                            val[table][i][cnt_shoot+1] = val[table][i-1][cnt_shoot+1] + val[table][i][cnt_shoot];
+                                                            val[table][z][cnt_shoot+1] = val[table][z-1][cnt_shoot+1] + val[table][z][cnt_shoot];
+                                                            if (val[table][z-1][cnt_shoot+1] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
+                                                            if (val[table][z][cnt_shoot] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
                                                           }
-                                                          sumControllers[table][i].text = val[table][i][cnt_shoot].toString();
-                                                          sumSumControllers[table][i].text = val[table][i][cnt_shoot+1].toString();
-                                                        } else {
-                                                          sumControllers[table][i].text = '';
-                                                          sumSumControllers[table][i].text = '';
+
+                                                          bool flag = true;
+                                                          for (int w = 0; w < cnt_shoot; ++w) {
+                                                            if (val[table][z][w] != -1) {
+                                                              sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
+                                                              sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
+                                                              flag = false;
+                                                            }
+                                                          }
+                                                          if (flag) {
+                                                            sumControllers[table][z].text = '';
+                                                            sumSumControllers[table][z].text = '';
+                                                          }
+
                                                         }
                                                         sl<TableData>().updateTable(name_note, val);
                                                       });
@@ -292,26 +334,42 @@ class _TablePageState extends State<TablePage> {
                                                       int n = int.tryParse(v) ?? -1;
                                                       setState(() {
                                                         val[table][i][j] = n;
-                                                        bool flag = true;
                                                         int sum = 0;
                                                         for (int k = 0; k < cnt_shoot; ++k) {
                                                           sum += val[table][i][k];
-                                                          if (val[table][i][k] == -1) {
-                                                            flag = false;
-                                                          }
+                                                          if (val[table][i][k] == -1) sum += 1;
                                                         }
-                                                        if (flag) {
-                                                          val[table][i][cnt_shoot] = sum;
-                                                          if (i == 0) {
-                                                            val[table][i][cnt_shoot+1] = val[table][i][cnt_shoot];
+
+                                                        val[table][i][cnt_shoot] = sum;
+                                                        for (int z = 0; z < cnt_ser; ++z) {
+                                                          if (z == 0) {
+                                                            val[table][z][cnt_shoot+1] = val[table][z][cnt_shoot];
+                                                            if (val[table][z][cnt_shoot] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
                                                           } else {
-                                                            val[table][i][cnt_shoot+1] = val[table][i-1][cnt_shoot+1] + val[table][i][cnt_shoot];
+                                                            val[table][z][cnt_shoot+1] = val[table][z-1][cnt_shoot+1] + val[table][z][cnt_shoot];
+                                                            if (val[table][z-1][cnt_shoot+1] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
+                                                            if (val[table][z][cnt_shoot] == -1) {
+                                                              val[table][z][cnt_shoot+1] += 1;
+                                                            }
                                                           }
-                                                          sumControllers[table][i].text = val[table][i][cnt_shoot].toString();
-                                                          sumSumControllers[table][i].text = val[table][i][cnt_shoot+1].toString();
-                                                        } else {
-                                                          sumControllers[table][i].text = '';
-                                                          sumSumControllers[table][i].text = '';
+
+                                                          bool flag = true;
+                                                          for (int w = 0; w < cnt_shoot; ++w) {
+                                                            if (val[table][z][w] != -1) {
+                                                              sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
+                                                              sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
+                                                              flag = false;
+                                                            }
+                                                          }
+                                                          if (flag) {
+                                                            sumControllers[table][z].text = '';
+                                                            sumSumControllers[table][z].text = '';
+                                                          }
+
                                                         }
                                                         sl<TableData>().updateTable(name_note, val);
                                                       });

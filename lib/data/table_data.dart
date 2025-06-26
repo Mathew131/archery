@@ -12,6 +12,16 @@ class TableData extends ChangeNotifier {
     save();
   }
 
+  void renameTable(String old_name_note, String new_name_note) {
+    tables[new_name_note] = tables[old_name_note]!
+        .map((table) => table
+        .map((row) => List<int>.from(row))
+        .toList())
+        .toList();
+    tables.remove(old_name_note);
+    save();
+  }
+
   void createTable(String name_note) {
     if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
       cnt_ser = 10;
