@@ -12,9 +12,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<String> notes = [];
+  List<String> current_notes = [];
   String name_note = 'Новая запись';
   String selectedDistance = 'Дистанция: 18м';
 
+  String selectedFilterDistance = 'Все дистанции';
   // bool isDuplicate = false;
 
   @override
@@ -24,12 +26,13 @@ class _HomeState extends State<Home> {
       await sl<TableData>().load();
       setState(() {
         notes = sl<TableData>().getNotes();
+        current_notes = sl<TableData>().getNotes();
       });
     });
   }
 
   int lastWriteElem(int i_table, int index) {
-    var table = sl<TableData>().getTable(notes[index]);
+    var table = sl<TableData>().getTable(current_notes[index]);
 
     for (int i = table[i_table].length-1; i >= 0; --i) {
       if (table[i_table][i].last != -1) {
@@ -40,7 +43,7 @@ class _HomeState extends State<Home> {
   }
 
   bool rg(int i_table, int index) {
-    var table = sl<TableData>().getTable(notes[index]);
+    var table = sl<TableData>().getTable(current_notes[index]);
 
     for (int i = 0; i < table[i_table].length; ++i) {
       for (int j = 0; j < table[i_table][i].length; ++j) {
@@ -51,6 +54,18 @@ class _HomeState extends State<Home> {
     }
 
     return true;
+  }
+
+  List<String> validDistance() {
+    if (selectedFilterDistance == 'Все дистанции') {
+      return [
+        'Дистанция: 12м','Дистанция: 18м','Дистанция: 30м',
+        'Дистанция: 40м','Дистанция: 50м','Дистанция: 60м',
+        'Дистанция: 70м','Дистанция: 80м','Дистанция: 90м',
+      ];
+    } else {
+      return ['Дистанция: $selectedFilterDistance'];
+    }
   }
 
   Widget button(BuildContext context, int index) {
@@ -69,7 +84,7 @@ class _HomeState extends State<Home> {
           ),
 
           onPressed: () async {
-            await Navigator.pushNamed(context, '/table', arguments: notes[index],);
+            await Navigator.pushNamed(context, '/table', arguments: current_notes[index],);
             setState(() {});
           },
 
@@ -83,13 +98,13 @@ class _HomeState extends State<Home> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            notes[index].split('_')[0],
+                            current_notes[index].split('_')[0],
                             style: TextStyle(color: Colors.black, fontSize: 16),
                             maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            notes[index].split('_').sublist(1, 3).join(' '),
+                            current_notes[index].split('_').sublist(1, 3).join(' '),
                             style: TextStyle(color: Colors.black54, fontSize: 12),
                           ),
                         ],
@@ -135,8 +150,9 @@ class _HomeState extends State<Home> {
                         onSelected: (value) {
                           if (value == 'delete') {
                             setState(() {
-                              sl<TableData>().removeTable(notes[index]);
-                              notes.removeAt(index);
+                              sl<TableData>().removeTable(current_notes[index]);
+                              notes.remove(current_notes[index]);
+                              current_notes.removeAt(index);
                             });
                           } else if (value == 'rename') {
 
@@ -168,10 +184,18 @@ class _HomeState extends State<Home> {
                                           onPressed: () {
                                             setState(() {
                                               var now = DateTime.now();
-                                              name_note = '${name_note}_${notes[index].split('_')[1]}_${notes[index].split('_')[2]}_${now.millisecondsSinceEpoch}';
+                                              name_note = '${name_note}_${current_notes[index].split('_')[1]}_${current_notes[index].split('_')[2]}_${now.millisecondsSinceEpoch}';
 
-                                              sl<TableData>().renameTable(notes[index], name_note);
-                                              notes[index] = name_note;
+                                              sl<TableData>().renameTable(current_notes[index], name_note);
+
+                                              for (int k = 0; k < notes.length; ++k) {
+                                                if (notes[k] == current_notes[index]) {
+                                                  notes[k] = name_note;
+                                                  break;
+                                                }
+                                              }
+                                              current_notes[index] = name_note;
+
 
                                               name_note = 'Новая запись';
                                               selectedDistance = 'Дистанция: 18м';
@@ -237,7 +261,39 @@ class _HomeState extends State<Home> {
             ],
           ),
           child: AppBar(
-            title: Text('Все записи'),
+            title: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: selectedFilterDistance,
+                dropdownColor: Colors.white,
+                icon: Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                style: TextStyle(color: Colors.black, fontSize: 20),
+                items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '80м', '90м'].map((d) {
+                  return DropdownMenuItem(
+                    value: d,
+                    child: d == 'Все дистанции' ? Text('$d') : Text('Дистанция: $d'),
+                  );
+                }).toList(),
+                onChanged: (v) {
+                  setState(() {
+                    selectedFilterDistance = v!;
+
+                    current_notes = [];
+                    if (selectedFilterDistance != 'Все дистанции') {
+                      for (int i = 0; i < notes.length; ++i) {
+                        if ('$selectedFilterDistance  ' == notes[i].split('_')[1]) {
+                          current_notes.add(notes[i]);
+                        }
+                      }
+                      selectedDistance = 'Дистанция: $selectedFilterDistance';
+                    } else {
+                      for (int i = 0; i < notes.length; ++i) {
+                        current_notes.add(notes[i]);
+                      }
+                    }
+                  });
+                },
+              ),
+            ),
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
           ),
@@ -255,7 +311,7 @@ class _HomeState extends State<Home> {
           ),
         ),
         ListView.builder(
-          itemCount: notes.length,
+          itemCount: current_notes.length,
           itemBuilder: (context, index) {
             return button(context, index);
           },
@@ -303,13 +359,9 @@ class _HomeState extends State<Home> {
                     DropdownButton<String>(
                       value: selectedDistance,
                       underline: SizedBox(),
-                      hint: Text('Дистанция: 18м'),
+                      hint: Text(selectedDistance),
                       isExpanded: true,
-                      items: [
-                        'Дистанция: 12м','Дистанция: 18м','Дистанция: 30м',
-                        'Дистанция: 40м','Дистанция: 50м','Дистанция: 60м',
-                        'Дистанция: 70м','Дистанция: 80м','Дистанция: 90м',
-                      ].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+                      items: validDistance().map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
                       onChanged: (v) => setStateDialog(() => selectedDistance = v!),
                     ),
                     SizedBox(height: 24),
@@ -323,6 +375,8 @@ class _HomeState extends State<Home> {
 
                             name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}';
                             notes.add(name_note);
+                            current_notes.add(name_note);
+
                             sl<TableData>().createTable(name_note);
                             name_note = 'Новая запись';
                             selectedDistance = 'Дистанция: 18м';

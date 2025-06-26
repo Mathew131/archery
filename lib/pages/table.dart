@@ -122,7 +122,7 @@ class _TablePageState extends State<TablePage> {
             ],
           ),
           child: AppBar(
-            title: Text(name_note.substring(0, name_note.indexOf('_'))),
+            title: Text(name_note.substring(0, name_note.indexOf('_')), style: TextStyle(fontSize: 20)),
             centerTitle: true,
             backgroundColor: Color(0xFFffbf69),
             scrolledUnderElevation: 0,
