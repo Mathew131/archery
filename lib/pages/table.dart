@@ -14,11 +14,18 @@ class _TablePageState extends State<TablePage> {
   late List<List<TextEditingController>> sumControllers;
   late List<List<TextEditingController>> sumSumControllers;
   late List<List<List<TextEditingController>>> inputControllers;
+  late List<List<List<FocusNode>>> inputFocusNodes;
   late List<List<List<int>>> val;
   late int cnt_ser;
   late int cnt_shoot;
   late bool flag;
   late int dop;
+
+  late int currentTable = 0;
+  late int currentI = 0;
+  late int currentJ = 0;
+  bool keyboardVisible = false;
+  bool Focus = false;
 
   late String name_note;
 
@@ -73,6 +80,14 @@ class _TablePageState extends State<TablePage> {
         ),
     );
 
+    inputFocusNodes = List.generate(2, (table) =>
+        List.generate(cnt_ser, (i) =>
+            List.generate(cnt_shoot, (j) {
+              return FocusNode();
+            }),
+        ),
+    );
+
   }
 
   @override
@@ -101,8 +116,216 @@ class _TablePageState extends State<TablePage> {
         c.dispose();
       }
     }
+
+    for (var i in inputFocusNodes) {
+      for (var j in i) {
+        for (var k in j) {
+          k.dispose();
+        }
+      }
+    }
+
     super.dispose();
   }
+
+
+  void insertText(BuildContext context, String text) {
+    final t = currentTable;
+    final i = currentI;
+    final j = currentJ;
+
+    final controller = inputControllers[t][i][j];
+    controller.text = text;
+    controller.selection = TextSelection.collapsed(offset: text.length);
+    onValueChanged(text, t, i, j);
+
+    int nextI = i;
+    int nextJ = j + 1;
+
+    if (nextJ >= cnt_shoot) {
+      nextJ = 0;
+      nextI++;
+    }
+
+    setState(() {
+      if (nextI < cnt_ser) {
+        currentI = nextI;
+        currentJ = nextJ;
+        FocusScope.of(context).requestFocus(inputFocusNodes[t][nextI][nextJ]);
+      }
+    });
+  }
+
+  void deleteText(BuildContext context) {
+    final t = currentTable;
+    final i = currentI;
+    final j = currentJ;
+
+    final controller = inputControllers[t][i][j];
+    controller.text = '';
+    controller.selection = TextSelection.collapsed(offset: ''.length);
+    onValueChanged('', t, i, j);
+
+    int nextI = i;
+    int nextJ = j - 1;
+
+    if (nextJ < 0) {
+      nextJ = cnt_shoot-1;
+      nextI--;
+    }
+
+    setState(() {
+      if (nextI >= 0) {
+        currentI = nextI;
+        currentJ = nextJ;
+        FocusScope.of(context).requestFocus(inputFocusNodes[t][nextI][nextJ]);
+      }
+    });
+  }
+
+  Widget buildCustomKeyboard() {
+    const labels = [
+      '1','2','3','←',
+      '4','5','6','OK',
+      '7','8','9','',
+      'м', '10','x','',
+    ];
+
+    return Container(
+      height: 300,
+      padding: const EdgeInsets.all(12),
+      decoration: const BoxDecoration(
+        color: Color(0xFFEEEEEE),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1.5,
+        ),
+        itemCount: labels.length,
+        itemBuilder: (_, idx) {
+          final label = labels[idx];
+          final isEmpty = label.isEmpty;
+
+          Color outerColor = Colors.grey[400]!;
+          Color innerColor = isEmpty || label == 'x' ? outerColor : Colors.white;
+          Widget child;
+
+          if (label == '←') {
+            child = const Icon(Icons.backspace_outlined, size: 24);
+          } else if (label == 'OK') {
+            child = const Text('OK', style: TextStyle(fontSize: 24, color: Colors.blue));
+          } else if (isEmpty) {
+            child = const SizedBox();
+          } else {
+            child = Text(label, style: const TextStyle(fontSize: 24));
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              color: outerColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Material(
+              color: innerColor,
+              borderRadius: BorderRadius.circular(6),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(6),
+                onTap: isEmpty ? null : () {
+                  if (label == 'OK') {
+                    setState(() {
+                      Focus = false;
+                      keyboardVisible = false;
+                    });
+                  } else if (label == '←') {
+                    deleteText(context);
+                  } else {
+                    insertText(context, label);
+                  }
+                },
+                child: Center(child: child),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
+  TextEditingController getController(int table, int i, int j) {
+    final controller = inputControllers[table][i][j];
+
+    if (controller.text == '0') {
+      controller.text = 'м';
+    } else if (controller.text == '11') {
+      controller.text = 'x';
+    }
+
+    return controller;
+  }
+
+  void onValueChanged(String v, int table, int i, int j) {
+    late int n;
+    if (v == 'м') {
+      n = 0;
+    } else if (v == 'x') {
+      n = 11;
+    } else {
+      n = int.tryParse(v) ?? -1;
+    }
+
+    setState(() {
+      val[table][i][j] = n;
+      int sum = 0;
+      for (int k = 0; k < cnt_shoot; ++k) {
+        sum += val[table][i][k];
+        if (val[table][i][k] == 11) sum -= 1;
+        if (val[table][i][k] == -1) sum += 1;
+      }
+
+      val[table][i][cnt_shoot] = sum;
+      for (int z = 0; z < cnt_ser; ++z) {
+        if (z == 0) {
+          val[table][z][cnt_shoot+1] = val[table][z][cnt_shoot];
+          if (val[table][z][cnt_shoot] == -1) {
+            val[table][z][cnt_shoot+1] += 1;
+          }
+        } else {
+          val[table][z][cnt_shoot+1] = val[table][z-1][cnt_shoot+1] + val[table][z][cnt_shoot];
+          if (val[table][z-1][cnt_shoot+1] == -1) {
+            val[table][z][cnt_shoot+1] += 1;
+          }
+          if (val[table][z][cnt_shoot] == -1) {
+            val[table][z][cnt_shoot+1] += 1;
+          }
+        }
+
+        bool flag = true;
+        for (int w = 0; w < cnt_shoot; ++w) {
+          if (val[table][z][w] != -1) {
+            sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
+            sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
+            flag = false;
+          }
+        }
+        if (flag) {
+          sumControllers[table][z].text = '';
+          sumSumControllers[table][z].text = '';
+        }
+
+      }
+      sl<TableData>().updateTable(name_note, val);
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -129,400 +352,399 @@ class _TablePageState extends State<TablePage> {
           ),
         ),
       ),
-      body: SafeArea(
-          child: SingleChildScrollView(
-              child: Column(
-                  children: [
-                    for (int table = 0; table < 2; ++table) ... [
-                      Padding(
-                        padding: EdgeInsets.only(top: 24, bottom: 16),
-                        child: Text(
-                          '${table+1} дистанция',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          for (int i = 0; i < cnt_ser; i++)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              child:
-                                Column(
-                                  children: [
-                                    if (cnt_ser == 6)
-                                      Row(
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 16,
-                                            backgroundColor: Colors.grey.shade200,
-                                            child: Text(
-                                              '${i + 1}',
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-
-                                          for (int j = 0; j < 3; j++) ... [
-                                            Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.only(left: 8),
-                                                child: AspectRatio(
-                                                  aspectRatio: 1,
-                                                  child: TextField(
-                                                    controller: inputControllers[table][i][j],
-
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.w400,
-                                                    ),
-
-                                                    textAlign: TextAlign.center,
-                                                    keyboardType: TextInputType.number,
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter.digitsOnly
-                                                    ],
-                                                    decoration: InputDecoration(
-                                                      border: OutlineInputBorder(),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(4),
-                                                        borderSide: BorderSide(
-                                                          color: Colors.orange,
-                                                          width: 3,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: SafeArea(
+                      child: SingleChildScrollView(
+                          child: Column(
+                              children: [
+                                for (int table = 0; table < 2; ++table) ... [
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 24, bottom: 16),
+                                    child: Text(
+                                      '${table+1} дистанция',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      for (int i = 0; i < cnt_ser; i++)
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            child:
+                                            Column(
+                                              children: [
+                                                if (cnt_ser == 6)
+                                                  Row(
+                                                    children: [
+                                                      CircleAvatar(
+                                                        radius: 16,
+                                                        backgroundColor: Colors.grey.shade200,
+                                                        child: Text(
+                                                          '${i + 1}',
+                                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                                         ),
                                                       ),
-                                                    ),
-                                                    onChanged: (v) {
-                                                      int n = int.tryParse(v) ?? -1;
-                                                      setState(() {
-                                                        val[table][i][j] = n;
-                                                        int sum = 0;
-                                                        for (int k = 0; k < cnt_shoot; ++k) {
-                                                          sum += val[table][i][k];
-                                                          if (val[table][i][k] == -1) sum += 1;
-                                                        }
 
-                                                        val[table][i][cnt_shoot] = sum;
-                                                        for (int z = 0; z < cnt_ser; ++z) {
-                                                          if (z == 0) {
-                                                            val[table][z][cnt_shoot+1] = val[table][z][cnt_shoot];
-                                                            if (val[table][z][cnt_shoot] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                          } else {
-                                                            val[table][z][cnt_shoot+1] = val[table][z-1][cnt_shoot+1] + val[table][z][cnt_shoot];
-                                                            if (val[table][z-1][cnt_shoot+1] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                            if (val[table][z][cnt_shoot] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                          }
+                                                      for (int j = 0; j < 3; j++) ... [
+                                                        Expanded(
+                                                          child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(
+                                                                readOnly: false,
 
-                                                          bool flag = true;
-                                                          for (int w = 0; w < cnt_shoot; ++w) {
-                                                            if (val[table][z][w] != -1) {
-                                                              sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
-                                                              sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
-                                                              flag = false;
-                                                            }
-                                                          }
-                                                          if (flag) {
-                                                            sumControllers[table][z].text = '';
-                                                            sumSumControllers[table][z].text = '';
-                                                          }
+                                                                focusNode: inputFocusNodes[table][i][j],
 
-                                                        }
-                                                        sl<TableData>().updateTable(name_note, val);
-                                                      });
-                                                    },
+                                                                showCursor: Focus == false ? false : true,
+                                                                enableInteractiveSelection: false,
+
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    Focus = true;
+                                                                    currentTable = table;
+                                                                    currentI = i;
+                                                                    currentJ = j;
+                                                                    keyboardVisible = true;
+                                                                    // showCustomKeyboard(context, table, i, j);
+                                                                  });
+                                                                },
+
+                                                                controller: getController(table, i, j),
+
+                                                                style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight: FontWeight.w400,
+                                                                ),
+
+                                                                textAlign: TextAlign.center,
+                                                                keyboardType: TextInputType.none,
+                                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+                                                                decoration: InputDecoration(
+                                                                  border: OutlineInputBorder(),
+                                                                  // enabledBorder: OutlineInputBorder(
+                                                                  //   borderRadius: BorderRadius.circular(4),
+                                                                  //   borderSide: BorderSide(
+                                                                  //     color: (table == currentTable && i == currentI && j == currentJ)
+                                                                  //         ? Colors.orange
+                                                                  //         : Colors.grey,
+                                                                  //     width: (table == currentTable && i == currentI && j == currentJ) ? 3 : 1,
+                                                                  //   ),
+                                                                  // ),
+                                                                  focusedBorder: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.circular(4),
+                                                                    borderSide: BorderSide(
+                                                                      color: (table == currentTable && i == currentI && j == currentJ) && Focus
+                                                                          ? Colors.orange
+                                                                          : Colors.grey,
+                                                                      width: (table == currentTable && i == currentI && j == currentJ) && Focus ? 3 : 1,
+                                                                    ),
+                                                                  ),
+                                                                ),
+
+                                                                // onChanged: (v) {
+                                                                //   onValueChanged(v, table, i, j);
+                                                                // },
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      Expanded(child:
+                                                      Visibility(
+                                                        visible: false,
+                                                        maintainState: true,
+                                                        maintainAnimation: true,
+                                                        maintainSize: true,
+                                                        maintainSemantics: false,
+                                                        maintainInteractivity: false,
+                                                        child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(),
+                                                            )
+                                                        ),
+                                                      ),
+                                                      ),
+
+                                                      Expanded(child:
+                                                      Visibility(
+                                                        visible: false,
+                                                        maintainState: true,
+                                                        maintainAnimation: true,
+                                                        maintainSize: true,
+                                                        maintainSemantics: false,
+                                                        maintainInteractivity: false,
+                                                        child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(),
+                                                            )
+                                                        ),
+                                                      ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                          Expanded(child:
-                                            Visibility(
-                                              visible: false,
-                                              maintainState: true,
-                                              maintainAnimation: true,
-                                              maintainSize: true,
-                                              maintainSemantics: false,
-                                              maintainInteractivity: false,
-                                              child: Padding(
-                                                  padding: EdgeInsets.only(left: 8),
-                                                  child: AspectRatio(
-                                                    aspectRatio: 1,
-                                                    child: TextField(),
-                                                  )
-                                              ),
-                                            ),
-                                          ),
+                                                Padding(
+                                                  padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
+                                                  child: Row(
+                                                    children: [
+                                                      Visibility(
+                                                        visible: flag,
+                                                        maintainState: true,
+                                                        maintainAnimation: true,
+                                                        maintainSize: true,
+                                                        maintainSemantics: false,
+                                                        maintainInteractivity: false,
+                                                        child: CircleAvatar(
+                                                          radius: 16,
+                                                          backgroundColor: Colors.grey.shade200,
+                                                          child: Text(
+                                                            '${i + 1}',
+                                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                                          ),
+                                                        ),
+                                                      ),
 
-                                          Expanded(child:
-                                            Visibility(
-                                              visible: false,
-                                              maintainState: true,
-                                              maintainAnimation: true,
-                                              maintainSize: true,
-                                              maintainSemantics: false,
-                                              maintainInteractivity: false,
-                                              child: Padding(
-                                                  padding: EdgeInsets.only(left: 8),
-                                                  child: AspectRatio(
-                                                    aspectRatio: 1,
-                                                    child: TextField(),
-                                                  )
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+
+
+                                                      for (int j = dop; j < 3+dop; j++) ... [
+                                                        Expanded(
+                                                          child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(
+                                                                readOnly: false,
+
+                                                                focusNode: inputFocusNodes[table][i][j],
+
+                                                                showCursor: Focus == false ? false : true,
+                                                                enableInteractiveSelection: false,
+
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    Focus = true;
+                                                                    currentTable = table;
+                                                                    currentI = i;
+                                                                    currentJ = j;
+                                                                    keyboardVisible = true;
+                                                                  });
+                                                                },
+
+                                                                controller: getController(table, i, j),
+
+                                                                style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight: FontWeight.w400,
+                                                                ),
+
+                                                                textAlign: TextAlign.center,
+                                                                keyboardType: TextInputType.none,
+                                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+                                                                decoration: InputDecoration(
+                                                                  border: OutlineInputBorder(),
+                                                                  // enabledBorder: OutlineInputBorder(
+                                                                  //   borderRadius: BorderRadius.circular(4),
+                                                                  //   borderSide: BorderSide(
+                                                                  //     color: (table == currentTable && i == currentI && j == currentJ)
+                                                                  //         ? Colors.orange
+                                                                  //         : Colors.grey,
+                                                                  //     width: (table == currentTable && i == currentI && j == currentJ) ? 3 : 1,
+                                                                  //   ),
+                                                                  // ),
+                                                                  focusedBorder: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.circular(4),
+                                                                    borderSide: BorderSide(
+                                                                      color: (table == currentTable && i == currentI && j == currentJ) && Focus
+                                                                          ? Colors.orange
+                                                                          : Colors.grey,
+                                                                      width: (table == currentTable && i == currentI && j == currentJ) && Focus ? 3 : 1,
+                                                                    ),
+                                                                  ),
+                                                                ),
+
+                                                                // onChanged: (v) {
+                                                                //   onValueChanged(v, table, i, j);
+                                                                // },
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                      Expanded(
+                                                        child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(
+                                                                textAlign: TextAlign.center,
+                                                                controller: sumControllers[table][i],
+                                                                readOnly: true,
+                                                                style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight: FontWeight.w600,
+                                                                ),
+                                                                decoration: InputDecoration(
+                                                                  filled: true,
+                                                                  fillColor: Colors.amber.shade50,
+
+                                                                  border: OutlineInputBorder(),
+                                                                  focusedBorder: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.circular(4),
+                                                                    borderSide: BorderSide(
+                                                                      color: Colors.indigo,
+                                                                      width: 3,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Padding(
+                                                            padding: EdgeInsets.only(left: 8),
+                                                            child: AspectRatio(
+                                                              aspectRatio: 1,
+                                                              child: TextField(
+                                                                textAlign: TextAlign.center,
+                                                                controller: sumSumControllers[table][i],
+                                                                readOnly: true,
+                                                                style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight: FontWeight.w600,
+                                                                ),
+                                                                decoration: InputDecoration(
+
+                                                                  filled: true,
+                                                                  fillColor: i == cnt_ser-1 ? Colors.amber.shade100 : Colors.amber.shade50,
+
+                                                                  border: OutlineInputBorder(),
+                                                                  focusedBorder: OutlineInputBorder(
+                                                                    borderRadius: BorderRadius.circular(4),
+                                                                    borderSide: BorderSide(
+                                                                      color: Colors.indigo,
+                                                                      width: 3,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              ],
+                                            )
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                                Column(
+                                  children: [
                                     Padding(
-                                      padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       child: Row(
                                         children: [
                                           Visibility(
-                                            visible: flag,
+                                            visible: false,
                                             maintainState: true,
                                             maintainAnimation: true,
                                             maintainSize: true,
                                             maintainSemantics: false,
                                             maintainInteractivity: false,
-                                            child: CircleAvatar(
+                                            child:
+                                            CircleAvatar(
                                               radius: 16,
-                                              backgroundColor: Colors.grey.shade200,
-                                              child: Text(
-                                                '${i + 1}',
-                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                              ),
+                                              child: Text(''),
                                             ),
                                           ),
-
-
-
-                                          for (int j = dop; j < 3+dop; j++) ... [
+                                          for (int z = 0; z < 5; ++z) ... [
                                             Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.only(left: 8),
-                                                child: AspectRatio(
-                                                  aspectRatio: 1,
-                                                  child: TextField(
-                                                    controller: inputControllers[table][i][j],
+                                                child:
+                                                Visibility(
+                                                  visible: z != 4 ? false : true,
+                                                  maintainState: true,
+                                                  maintainAnimation: true,
+                                                  maintainSize: true,
+                                                  maintainSemantics: false,
+                                                  maintainInteractivity: false,
+                                                  child:
+                                                  Padding(
+                                                      padding: EdgeInsets.only(left: 8),
+                                                      child: AspectRatio(
+                                                        aspectRatio: 1,
+                                                        child: TextField(
+                                                          textAlign: TextAlign.center,
+                                                          controller: TextEditingController(
+                                                            text: val[0][cnt_ser-1][cnt_shoot + 1] != -1 && val[1][cnt_ser-1][cnt_shoot + 1] != -1 ?
+                                                            (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',
+                                                          ),
+                                                          readOnly: true,
+                                                          style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          decoration: InputDecoration(
+                                                            filled: true,
+                                                            fillColor: Colors.amber.shade100,
 
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.w400,
-                                                    ),
-
-                                                    textAlign: TextAlign.center,
-                                                    keyboardType: TextInputType.number,
-                                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                                    decoration: InputDecoration(
-                                                      border: OutlineInputBorder(),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(4),
-                                                        borderSide: BorderSide(
-                                                          color: Colors.orange,
-                                                          width: 3,
+                                                            border: OutlineInputBorder(),
+                                                            focusedBorder: OutlineInputBorder(
+                                                              borderRadius: BorderRadius.circular(4),
+                                                              borderSide: BorderSide(
+                                                                color: Colors.indigo,
+                                                                width: 3,
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ),
-                                                    onChanged: (v) {
-                                                      int n = int.tryParse(v) ?? -1;
-                                                      setState(() {
-                                                        val[table][i][j] = n;
-                                                        int sum = 0;
-                                                        for (int k = 0; k < cnt_shoot; ++k) {
-                                                          sum += val[table][i][k];
-                                                          if (val[table][i][k] == -1) sum += 1;
-                                                        }
-
-                                                        val[table][i][cnt_shoot] = sum;
-                                                        for (int z = 0; z < cnt_ser; ++z) {
-                                                          if (z == 0) {
-                                                            val[table][z][cnt_shoot+1] = val[table][z][cnt_shoot];
-                                                            if (val[table][z][cnt_shoot] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                          } else {
-                                                            val[table][z][cnt_shoot+1] = val[table][z-1][cnt_shoot+1] + val[table][z][cnt_shoot];
-                                                            if (val[table][z-1][cnt_shoot+1] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                            if (val[table][z][cnt_shoot] == -1) {
-                                                              val[table][z][cnt_shoot+1] += 1;
-                                                            }
-                                                          }
-
-                                                          bool flag = true;
-                                                          for (int w = 0; w < cnt_shoot; ++w) {
-                                                            if (val[table][z][w] != -1) {
-                                                              sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
-                                                              sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
-                                                              flag = false;
-                                                            }
-                                                          }
-                                                          if (flag) {
-                                                            sumControllers[table][z].text = '';
-                                                            sumSumControllers[table][z].text = '';
-                                                          }
-
-                                                        }
-                                                        sl<TableData>().updateTable(name_note, val);
-                                                      });
-                                                    },
+                                                      )
                                                   ),
-                                                ),
-                                              ),
+                                                )
                                             ),
                                           ],
-                                          Expanded(
-                                            child: Padding(
-                                                padding: EdgeInsets.only(left: 8),
-                                                child: AspectRatio(
-                                                  aspectRatio: 1,
-                                                  child: TextField(
-                                                    textAlign: TextAlign.center,
-                                                    controller: sumControllers[table][i],
-                                                    readOnly: true,
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                    decoration: InputDecoration(
-                                                      filled: true,
-                                                      fillColor: Colors.amber.shade50,
-
-                                                      border: OutlineInputBorder(),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(4),
-                                                        borderSide: BorderSide(
-                                                          color: Colors.indigo,
-                                                          width: 3,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                                padding: EdgeInsets.only(left: 8),
-                                                child: AspectRatio(
-                                                  aspectRatio: 1,
-                                                  child: TextField(
-                                                    textAlign: TextAlign.center,
-                                                    controller: sumSumControllers[table][i],
-                                                    readOnly: true,
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                    decoration: InputDecoration(
-
-                                                      filled: true,
-                                                      fillColor: i == cnt_ser-1 ? Colors.amber.shade100 : Colors.amber.shade50,
-
-                                                      border: OutlineInputBorder(),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(4),
-                                                        borderSide: BorderSide(
-                                                          color: Colors.indigo,
-                                                          width: 3,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
-                                            ),
-                                          ),
                                         ],
                                       ),
                                     )
                                   ],
-                                )
-                            ),
-                        ],
-                      ),
-                    ],
-                    Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: Row(
-                            children: [
-                              Visibility(
-                                  visible: false,
-                                  maintainState: true,
-                                  maintainAnimation: true,
-                                  maintainSize: true,
-                                  maintainSemantics: false,
-                                  maintainInteractivity: false,
-                                  child:
-                                    CircleAvatar(
-                                      radius: 16,
-                                      child: Text(''),
-                                    ),
-                              ),
-                              for (int z = 0; z < 5; ++z) ... [
-                                Expanded(
-                                  child:
-                                    Visibility(
-                                      visible: z != 4 ? false : true,
-                                      maintainState: true,
-                                      maintainAnimation: true,
-                                      maintainSize: true,
-                                      maintainSemantics: false,
-                                      maintainInteractivity: false,
-                                      child:
-                                        Padding(
-                                          padding: EdgeInsets.only(left: 8),
-                                          child: AspectRatio(
-                                            aspectRatio: 1,
-                                            child: TextField(
-                                              textAlign: TextAlign.center,
-                                              controller: TextEditingController(
-                                                text: val[0][cnt_ser-1][cnt_shoot + 1] != -1 && val[1][cnt_ser-1][cnt_shoot + 1] != -1 ?
-                                                (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',
-                                              ),
-                                              readOnly: true,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              decoration: InputDecoration(
-                                                filled: true,
-                                                fillColor: Colors.amber.shade100,
-
-                                                border: OutlineInputBorder(),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  borderSide: BorderSide(
-                                                    color: Colors.indigo,
-                                                    width: 3,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        ),
-                                    )
                                 ),
-                              ],
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                  ]
-              )
-          )
-      ),
+                                SizedBox(height: 304),
+                              ]
+                          )
+                      )
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (keyboardVisible)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: buildCustomKeyboard(),
+            )
+        ],
+      )
+
+
     );
   }
 }
