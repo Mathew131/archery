@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TableData extends ChangeNotifier {
   final tables = <String, List<List<List<int>>>>{};
@@ -9,6 +9,7 @@ class TableData extends ChangeNotifier {
 
   void removeTable(String name_note) {
     tables.remove(name_note);
+    FirebaseFirestore.instance.collection('tables').doc(name_note).delete();
     save();
   }
 
@@ -33,6 +34,7 @@ class TableData extends ChangeNotifier {
     
     tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
     notifyListeners();
+
     save();
   }
 
@@ -43,6 +45,7 @@ class TableData extends ChangeNotifier {
   void updateTable(String name_note, List<List<List<int>>> table) {
     tables[name_note] = table;
     notifyListeners();
+
     save();
   }
 
@@ -51,25 +54,28 @@ class TableData extends ChangeNotifier {
   }
 
   Future<void> save() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = jsonEncode(tables);
-    await prefs.setString('tables', jsonString);
+    for (final entry in tables.entries) {
+      await FirebaseFirestore.instance.collection('tables').doc(entry.key).set({
+        'data': jsonEncode(entry.value),
+      });
+    }
   }
 
   Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('tables');
-    if (jsonString != null) {
-      final decoded = jsonDecode(jsonString);
-      tables.clear();
-      decoded.forEach((key, value) {
-        tables[key] = List<List<List<int>>>.from(
-          (value as List).map((table) => List<List<int>>.from(
-              (table as List).map((row) => List<int>.from(row),),
-            ),
-          ),
-        );
-      });
+    final snapshot = await FirebaseFirestore.instance.collection('tables').get();
+
+    for (final doc in snapshot.docs) {
+      final encoded = doc['data'] as String;
+
+      final decoded = jsonDecode(encoded);
+
+      final table = (decoded as List)
+          .map((list1) => (list1 as List)
+          .map((list2) => (list2 as List).map((v) => v as int).toList())
+          .toList())
+          .toList();
+
+      tables[doc.id] = table;
     }
   }
 }

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:archery/pages/home.dart';
-import 'package:archery/pages/table.dart';
-import 'package:archery/data/di.dart';
+import 'package:archery/main_app.dart';
+import 'package:archery/pages/no_internet.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  setupDI();
-  runApp(MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => Home(),
-        '/table': (context) => TablePage(),
-      }
-  ));
+
+  if (!await hasInternet()) {
+    runApp(NoInternetApp());
+    return;
+  }
+
+  runApp(await createMainApp());
 }
+
+
+
