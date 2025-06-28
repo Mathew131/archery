@@ -214,7 +214,7 @@ class _TablePageState extends State<TablePage> {
           final isEmpty = label.isEmpty;
 
           Color outerColor = Colors.grey[400]!;
-          Color innerColor = isEmpty || label == 'x' ? outerColor : Colors.white;
+          Color innerColor = isEmpty ? outerColor : Colors.white;
           Widget child;
 
           if (label == '←') {
