@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:archery/data/di.dart';
-import 'package:archery/data/table_data.dart';
+import 'package:archery/data/data.dart';
 
 class TablePage extends StatefulWidget {
   const TablePage({super.key});
@@ -35,7 +35,7 @@ class _TablePageState extends State<TablePage> {
     var args = ModalRoute.of(context)?.settings.arguments!;
     if (args != null && args is String) {
       name_note = args;
-      val = sl<TableData>().getTable(name_note);
+      val = sl<Data>().getTable(name_note);
     }
 
     if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
@@ -212,7 +212,6 @@ class _TablePageState extends State<TablePage> {
         itemBuilder: (_, idx) {
           final label = labels[idx];
           final isEmpty = label.isEmpty;
-
           Color outerColor = Colors.grey[350]!;
           Color innerColor = isEmpty ? outerColor : Colors.white;
           Widget child;
@@ -227,30 +226,24 @@ class _TablePageState extends State<TablePage> {
             child = Text(label, style: const TextStyle(fontSize: 24));
           }
 
-          return Container(
-            decoration: BoxDecoration(
-              color: outerColor,
+          return Material(
+            color: outerColor,
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
               borderRadius: BorderRadius.circular(8),
-            ),
-            child: Material(
-              color: innerColor,
-              borderRadius: BorderRadius.circular(6),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(6),
-                onTap: isEmpty ? null : () {
-                  if (label == 'OK') {
-                    setState(() {
-                      Focus = false;
-                      keyboardVisible = false;
-                    });
-                  } else if (label == '←') {
-                    deleteText(context);
-                  } else {
-                    insertText(context, label);
-                  }
-                },
-                child: Center(child: child),
-              ),
+              onTap: isEmpty ? null : () {
+                if (label == 'OK') {
+                  setState(() {
+                    Focus = false;
+                    keyboardVisible = false;
+                  });
+                } else if (label == '←') {
+                  deleteText(context);
+                } else {
+                  insertText(context, label);
+                }
+              },
+              child: Center(child: child),
             ),
           );
         },
@@ -321,7 +314,7 @@ class _TablePageState extends State<TablePage> {
         }
 
       }
-      sl<TableData>().updateTable(name_note, val);
+      sl<Data>().updateTable(name_note, val);
     });
   }
 

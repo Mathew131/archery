@@ -1,8 +1,39 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class TableData extends ChangeNotifier {
+class Data extends ChangeNotifier {
+  String tokenKey = 'auth_token';
+  late String token;
+
+  Future<void> saveToken(String name, String lastname, email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(tokenKey, '$name:$lastname:$email');
+  }
+
+  Future<String> loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(tokenKey) == null) {
+      return '';
+    } else {
+      return prefs.getString(tokenKey)!;
+    }
+  }
+
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(tokenKey);
+  }
+
+  Future<bool> isLoggedIn() async {
+    final token = await loadToken();
+
+    return token.isNotEmpty;
+
+  }
+
+
   final tables = <String, List<List<List<int>>>>{};
   late int cnt_ser;
   late int cnt_shoot;
@@ -54,18 +85,19 @@ class TableData extends ChangeNotifier {
   }
 
   Future<void> save() async {
-    for (final entry in tables.entries) {
-      await FirebaseFirestore.instance.collection('tables').doc(entry.key).set({
-        'data': jsonEncode(entry.value),
-      });
+    final data = <String, String>{};
+    for (final e in tables.entries) {
+      data[e.key] = jsonEncode(e.value);
     }
+    await FirebaseFirestore.instance.collection(token).doc('tables').set(data);
   }
 
   Future<void> load() async {
-    final snapshot = await FirebaseFirestore.instance.collection('tables').get();
+    final snapshot = await FirebaseFirestore.instance.collection(token).doc('tables').get();
 
-    for (final doc in snapshot.docs) {
-      final encoded = doc['data'] as String;
+    final data = snapshot.data()!;
+    for (final key in data.keys) {
+      final encoded = data[key] as String;
 
       final decoded = jsonDecode(encoded);
 
@@ -75,7 +107,7 @@ class TableData extends ChangeNotifier {
           .toList())
           .toList();
 
-      tables[doc.id] = table;
+      tables[key] = table;
     }
   }
 }

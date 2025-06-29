@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
-import 'package:archery/data/table_data.dart';
+import 'package:archery/data/data.dart';
 import 'package:flutter/services.dart';
 
 class Home extends StatefulWidget {
@@ -21,19 +21,21 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
+
     super.initState();
     Future.microtask(() async {
-      await sl<TableData>().load();
+      sl<Data>().token = await sl<Data>().loadToken();
+
+      await sl<Data>().load();
       setState(() {
-        notes = sl<TableData>().getNotes();
-        current_notes = sl<TableData>().getNotes();
+        notes = sl<Data>().getNotes();
+        current_notes = sl<Data>().getNotes();
       });
     });
   }
 
   int lastWriteElem(int i_table, int index) {
-    var table = sl<TableData>().getTable(current_notes[index]);
-
+    var table = sl<Data>().getTable(current_notes[index]);
     for (int i = table[i_table].length-1; i >= 0; --i) {
       if (table[i_table][i].last != -1) {
         return table[i_table][i].last;
@@ -43,7 +45,7 @@ class _HomeState extends State<Home> {
   }
 
   bool rg(int i_table, int index) {
-    var table = sl<TableData>().getTable(current_notes[index]);
+    var table = sl<Data>().getTable(current_notes[index]);
 
     for (int i = 0; i < table[i_table].length; ++i) {
       for (int j = 0; j < table[i_table][i].length; ++j) {
@@ -74,7 +76,8 @@ class _HomeState extends State<Home> {
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             // backgroundColor: Colors.orangeAccent, //Color.fromRGBO(255, 180, 85, 1),
-            backgroundColor: Color(0xFFffbf69),
+            // backgroundColor: Color(0xFFffbf69),
+            backgroundColor: Colors.orangeAccent.shade100,
             padding: EdgeInsets.symmetric(vertical: 12),
             elevation: 3,
             shape: RoundedRectangleBorder(
@@ -85,8 +88,13 @@ class _HomeState extends State<Home> {
 
           onPressed: () async {
             await Navigator.pushNamed(context, '/table', arguments: current_notes[index],);
-            setState(() {});
+            final notes = sl<Data>().getNotes();
+            setState(() {
+              this.notes = notes;
+              current_notes = notes;
+            });
           },
+
 
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,8 +125,8 @@ class _HomeState extends State<Home> {
                     // Padding(
                     //   padding: EdgeInsets.only(right: 10),
                     //   child: Text(
-                    //     '${sl<TableData>().getTable(notes[index]).first.last.last} + ${sl<TableData>().getTable(notes[index]).last.last.last} = '
-                    //         '${sl<TableData>().getTable(notes[index]).first.last.last + sl<TableData>().getTable(notes[index]).last.last.last}',
+                    //     '${sl<Data>().getTable(notes[index]).first.last.last} + ${sl<Data>().getTable(notes[index]).last.last.last} = '
+                    //         '${sl<Data>().getTable(notes[index]).first.last.last + sl<Data>().getTable(notes[index]).last.last.last}',
                     //     style: TextStyle(color: Color(0xFF52992c), fontSize: 18, fontWeight: FontWeight.bold),
                     //   ),
                     // ),
@@ -150,7 +158,7 @@ class _HomeState extends State<Home> {
                         onSelected: (value) {
                           if (value == 'delete') {
                             setState(() {
-                              sl<TableData>().removeTable(current_notes[index]);
+                              sl<Data>().removeTable(current_notes[index]);
                               notes.remove(current_notes[index]);
                               current_notes.removeAt(index);
                             });
@@ -186,7 +194,7 @@ class _HomeState extends State<Home> {
                                               var now = DateTime.now();
                                               name_note = '${name_note}_${current_notes[index].split('_')[1]}_${current_notes[index].split('_')[2]}_${now.millisecondsSinceEpoch}';
 
-                                              sl<TableData>().renameTable(current_notes[index], name_note);
+                                              sl<Data>().renameTable(current_notes[index], name_note);
 
                                               for (int k = 0; k < notes.length; ++k) {
                                                 if (notes[k] == current_notes[index]) {
@@ -227,7 +235,7 @@ class _HomeState extends State<Home> {
                     //     icon: Icon(Icons.delete_outline, color: Colors.red.shade700, size: 24,),
                     //     onPressed: () {
                     //       setState(() {
-                    //         sl<TableData>().removeTable(notes[index]);
+                    //         sl<Data>().removeTable(notes[index]);
                     //         notes.removeAt(index);
                     //       });
                     //     },
@@ -296,6 +304,7 @@ class _HomeState extends State<Home> {
             ),
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
+            // backgroundColor: Colors.deepOrangeAccent.shade200,
           ),
         ),
       ),
@@ -376,7 +385,7 @@ class _HomeState extends State<Home> {
                             notes.add(name_note);
                             current_notes.add(name_note);
 
-                            sl<TableData>().createTable(name_note);
+                            sl<Data>().createTable(name_note);
                             name_note = 'Новая запись';
                             selectedDistance = 'Дистанция: 18м';
                           });
