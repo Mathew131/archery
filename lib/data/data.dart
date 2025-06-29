@@ -7,9 +7,9 @@ class Data extends ChangeNotifier {
   String tokenKey = 'auth_token';
   late String token;
 
-  Future<void> saveToken(String name, String lastname, email) async {
+  Future<void> saveToken(String name, String lastname, String email, String type) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(tokenKey, '$name:$lastname:$email');
+    await prefs.setString(tokenKey, '$name:$lastname:$email:$type');
   }
 
   Future<String> loadToken() async {
@@ -19,11 +19,6 @@ class Data extends ChangeNotifier {
     } else {
       return prefs.getString(tokenKey)!;
     }
-  }
-
-  Future<void> clearToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(tokenKey);
   }
 
   Future<bool> isLoggedIn() async {
@@ -93,6 +88,8 @@ class Data extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    tables.clear();
+
     final snapshot = await FirebaseFirestore.instance.collection(token).doc('tables').get();
 
     final data = snapshot.data()!;

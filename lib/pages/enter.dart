@@ -16,6 +16,7 @@ class _RegisterState extends State<Register> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  late String type = '';
 
   Future<void> load_data() async {
     final loggedIn = await sl<Data>().isLoggedIn();
@@ -25,6 +26,7 @@ class _RegisterState extends State<Register> {
       firstNameController.text = token.split(':')[0];
       lastNameController.text = token.split(':')[1];
       emailController.text = token.split(':')[2];
+      type = token.split(':')[3];
     }
   }
 
@@ -101,7 +103,49 @@ class _RegisterState extends State<Register> {
                 ),
                 SizedBox(height: 24),
 
-                // Register button
+                SizedBox(
+                  width: 320,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child:
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              type = 'Спортсмен';
+                            });
+                          },
+                          child: Text('Спортсмен'),
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: type == 'Спортсмен' ? Color(0xFF95d5b2) : null,
+                            foregroundColor: type == 'Спортсмен' ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(width: 24),
+
+                      Expanded(child:
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              type = 'Тренер';
+                            });
+                          },
+                          child: Text('Тренер'),
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: type == 'Тренер' ? Color(0xFF95d5b2) : null,
+                            foregroundColor: type == 'Тренер' ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 24),
                 SizedBox(
                   width: 320,
                   height: 50,
@@ -115,8 +159,8 @@ class _RegisterState extends State<Register> {
                       ),
                     ),
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        sl<Data>().saveToken(firstNameController.text, lastNameController.text, emailController.text);
+                      if (_formKey.currentState!.validate() && type != '') {
+                        await sl<Data>().saveToken(firstNameController.text, lastNameController.text, emailController.text, type);
                         await Navigator.pushNamed(context, '/home');
                       }
                     },
