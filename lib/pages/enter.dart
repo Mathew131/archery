@@ -26,13 +26,17 @@ class _RegisterState extends State<Register> {
       firstNameController.text = token.split(':')[0];
       lastNameController.text = token.split(':')[1];
       emailController.text = token.split(':')[2];
-      type = token.split(':')[3];
+      setState(() {
+        type = token.split(':')[3];
+      });
     }
   }
 
   @override
   void initState() {
-    load_data();
+    setState(() {
+      load_data();
+    });
 
     super.initState();
   }
@@ -40,9 +44,9 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Вход')),
+      // appBar: AppBar(title: Text('Вход')),
       body: Align(
-        alignment: Alignment(0, -0.3),
+        alignment: Alignment(0, 0),
         child: SingleChildScrollView(
           padding: EdgeInsets.all(16),
           child: Form(
@@ -161,7 +165,7 @@ class _RegisterState extends State<Register> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate() && type != '') {
                         await sl<Data>().saveToken(firstNameController.text, lastNameController.text, emailController.text, type);
-                        await Navigator.pushNamed(context, '/home');
+                        await Navigator.pushNamed(context, '/');
                       }
                     },
                     child: Text('Вход'),

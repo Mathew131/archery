@@ -5,6 +5,9 @@ import 'package:archery/data/data.dart';
 import 'package:archery/pages/home.dart';
 import 'package:archery/pages/table.dart';
 import 'package:archery/pages/enter.dart';
+import 'package:archery/pages/sportsmen.dart';
+import 'package:archery/pages/root.dart';
+
 
 Future<Widget> createMainApp() async {
   await Firebase.initializeApp();
@@ -13,10 +16,13 @@ Future<Widget> createMainApp() async {
   final loggedIn = await sl<Data>().isLoggedIn();
 
   return MaterialApp(
-    initialRoute: loggedIn ? '/home' : '/',
+    initialRoute: loggedIn ? '/' : '/register',
+    // initialRoute: '/',
     routes: {
-      '/': (contest) => Register(),
-      '/home': (context) => Home(),
+      '/': (contest) => MainNavigation(), // он содержит следующие 3
+      '/register': (contest) => Register(),
+      // '/sportsmen': (contest) => Sportsmen(),
+      // '/home': (context) => Home(),
       '/table': (context) => TablePage(),
     },
   );

@@ -15,9 +15,7 @@ class _HomeState extends State<Home> {
   List<String> current_notes = [];
   String name_note = 'Новая запись';
   String selectedDistance = 'Дистанция: 18м';
-
   String selectedFilterDistance = 'Все дистанции';
-  // bool isDuplicate = false;
 
   @override
   void initState() {
@@ -301,6 +299,7 @@ class _HomeState extends State<Home> {
                 },
               ),
             ),
+            automaticallyImplyLeading: false,
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
             // backgroundColor: Colors.deepOrangeAccent.shade200,
@@ -325,7 +324,6 @@ class _HomeState extends State<Home> {
           },
         ),
       ]),
-
 
       floatingActionButton: FloatingActionButton(
         // backgroundColor: Colors.greenAccent,
