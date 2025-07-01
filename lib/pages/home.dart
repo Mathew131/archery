@@ -21,6 +21,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     Future.microtask(() async {
+      print('2');
       sl<Data>().token = await sl<Data>().loadToken();
 
       await sl<Data>().load();
@@ -84,7 +85,7 @@ class _HomeState extends State<Home> {
           ),
 
           onPressed: () async {
-            await Navigator.pushNamed(context, '/table', arguments: current_notes[index],);
+            await Navigator.pushNamed(context, '/table', arguments: [current_notes[index], 'h']);
             final notes = sl<Data>().getNotes();
             setState(() {
               this.notes = notes;

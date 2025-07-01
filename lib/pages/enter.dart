@@ -116,14 +116,14 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              type = 'Спортсмен';
+                              type = 'sportsman';
                             });
                           },
                           child: Text('Спортсмен'),
 
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: type == 'Спортсмен' ? Color(0xFF95d5b2) : null,
-                            foregroundColor: type == 'Спортсмен' ? Colors.white : Colors.black,
+                            backgroundColor: type == 'sportsman' ? Color(0xFF95d5b2) : null,
+                            foregroundColor: type == 'sportsman' ? Colors.white : Colors.black,
                           ),
                         ),
                       ),
@@ -134,14 +134,14 @@ class _RegisterState extends State<Register> {
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              type = 'Тренер';
+                              type = 'coach';
                             });
                           },
                           child: Text('Тренер'),
 
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: type == 'Тренер' ? Color(0xFF95d5b2) : null,
-                            foregroundColor: type == 'Тренер' ? Colors.white : Colors.black,
+                            backgroundColor: type == 'coach' ? Color(0xFF95d5b2) : null,
+                            foregroundColor: type == 'coach' ? Colors.white : Colors.black,
                           ),
                         ),
                       ),
@@ -164,6 +164,7 @@ class _RegisterState extends State<Register> {
                     ),
                     onPressed: () async {
                       if (_formKey.currentState!.validate() && type != '') {
+                        // sl<Data>().tables.clear();
                         await sl<Data>().saveToken(firstNameController.text, lastNameController.text, emailController.text, type);
                         await Navigator.pushNamed(context, '/');
                       }

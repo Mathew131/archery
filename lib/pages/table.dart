@@ -26,68 +26,71 @@ class _TablePageState extends State<TablePage> {
   late int currentJ = 0;
   bool keyboardVisible = false;
   bool Focus = false;
+  bool isH = true;
 
   late String name_note;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    var args = ModalRoute.of(context)?.settings.arguments!;
-    if (args != null && args is String) {
-      name_note = args;
-      val = sl<Data>().getTable(name_note);
-    }
-
-    if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
-      cnt_ser = 10;
-      cnt_shoot = 3;
-      flag = true;
-      dop = 0;
-    } else {
-      cnt_ser = 6;
-      cnt_shoot = 6;
-      flag = false;
-      dop = 3;
-    }
-
-
-    sumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
-      final value = val[table][i][cnt_shoot];
-      for (int z = 0; z < cnt_shoot; ++z) {
-        if (val[table][i][z] != -1) {
-          return TextEditingController(text: value.toString());
-        }
+    setState(() {
+      var args = ModalRoute.of(context)?.settings.arguments!;
+      if (args is List) {
+        if (args[1] == 'hr') isH = false;
+        name_note = args[0];
+        val = sl<Data>().getTable(name_note);
       }
-      return TextEditingController(text: '');
-    }));
 
-    sumSumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
-      final value = val[table][i][cnt_shoot+1];
-      for (int z = 0; z < cnt_shoot; ++z) {
-        if (val[table][i][z] != -1) {
-          return TextEditingController(text: value.toString());
-        }
+      if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
+        cnt_ser = 10;
+        cnt_shoot = 3;
+        flag = true;
+        dop = 0;
+      } else {
+        cnt_ser = 6;
+        cnt_shoot = 6;
+        flag = false;
+        dop = 3;
       }
-      return TextEditingController(text: '');
-    }));
 
-    inputControllers = List.generate(2, (table) =>
-        List.generate(cnt_ser, (i) =>
-            List.generate(cnt_shoot, (j) {
-              final value = val[table][i][j];
-              return TextEditingController(text: value != -1 ? value.toString() : '');
-            }),
-        ),
-    );
 
-    inputFocusNodes = List.generate(2, (table) =>
-        List.generate(cnt_ser, (i) =>
-            List.generate(cnt_shoot, (j) {
-              return FocusNode();
-            }),
-        ),
-    );
+      sumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
+        final value = val[table][i][cnt_shoot];
+        for (int z = 0; z < cnt_shoot; ++z) {
+          if (val[table][i][z] != -1) {
+            return TextEditingController(text: value.toString());
+          }
+        }
+        return TextEditingController(text: '');
+      }));
 
+      sumSumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
+        final value = val[table][i][cnt_shoot+1];
+        for (int z = 0; z < cnt_shoot; ++z) {
+          if (val[table][i][z] != -1) {
+            return TextEditingController(text: value.toString());
+          }
+        }
+        return TextEditingController(text: '');
+      }));
+
+      inputControllers = List.generate(2, (table) =>
+          List.generate(cnt_ser, (i) =>
+              List.generate(cnt_shoot, (j) {
+                final value = val[table][i][j];
+                return TextEditingController(text: value != -1 ? value.toString() : '');
+              }),
+          ),
+      );
+
+      inputFocusNodes = List.generate(2, (table) =>
+          List.generate(cnt_ser, (i) =>
+              List.generate(cnt_shoot, (j) {
+                return FocusNode();
+              }),
+          ),
+      );
+    });
   }
 
   @override
@@ -398,19 +401,28 @@ class _TablePageState extends State<TablePage> {
 
                                                                 focusNode: inputFocusNodes[table][i][j],
 
-                                                                showCursor: Focus == false ? false : true,
+                                                                showCursor: (Focus == false ? false : true) && isH,
                                                                 enableInteractiveSelection: false,
 
-                                                                onTap: () {
+                                                                // onTap: () {
+                                                                //   setState(() {
+                                                                //     Focus = true;
+                                                                //     currentTable = table;
+                                                                //     currentI = i;
+                                                                //     currentJ = j;
+                                                                //     keyboardVisible = true;
+                                                                //     // showCustomKeyboard(context, table, i, j);
+                                                                //   });
+                                                                // },
+                                                                onTap: isH == true ? () {
                                                                   setState(() {
                                                                     Focus = true;
                                                                     currentTable = table;
                                                                     currentI = i;
                                                                     currentJ = j;
                                                                     keyboardVisible = true;
-                                                                    // showCustomKeyboard(context, table, i, j);
                                                                   });
-                                                                },
+                                                                } : null,
 
                                                                 controller: getController(table, i, j),
 
@@ -524,10 +536,19 @@ class _TablePageState extends State<TablePage> {
 
                                                                 focusNode: inputFocusNodes[table][i][j],
 
-                                                                showCursor: Focus == false ? false : true,
+                                                                showCursor: (Focus == false ? false : true) && isH,
                                                                 enableInteractiveSelection: false,
 
-                                                                onTap: () {
+                                                                // onTap: () {
+                                                                //   setState(() {
+                                                                //     Focus = true;
+                                                                //     currentTable = table;
+                                                                //     currentI = i;
+                                                                //     currentJ = j;
+                                                                //     keyboardVisible = true;
+                                                                //   });
+                                                                // },
+                                                                onTap: isH == true ? () {
                                                                   setState(() {
                                                                     Focus = true;
                                                                     currentTable = table;
@@ -535,7 +556,7 @@ class _TablePageState extends State<TablePage> {
                                                                     currentJ = j;
                                                                     keyboardVisible = true;
                                                                   });
-                                                                },
+                                                                } : null,
 
                                                                 controller: getController(table, i, j),
 

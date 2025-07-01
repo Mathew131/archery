@@ -12,47 +12,64 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  bool isCoach = true;
+  late List<BottomNavigationBarItem> items;
 
-  List<Widget> _pages = [
-    Home(),
-    Sportsmen(),
-    Register(),
-  ];
+  Widget buildPage(int index) {
+    if (isCoach) {
+      switch (index) {
+        case 0: return Home();
+        case 1: return Sportsmen();
+        case 2: return Register();
+      }
+    } else {
+      switch (index) {
+        case 0: return Home();
+        case 1: return Register();
+      }
+    }
+    return Center(child: Text('Неизвестная страница'));
+  }
 
-  var _items = [
-    BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Запись'),
-    BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Мои спортсмены'),
-    BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Профиль'),
-  ];
-
-  void Who() async {
+  void loadRole() async {
     String who = await sl<Data>().loadToken();
-    if (who.split(':')[3] == 'Спортсмен') {
+    if (who.split(':')[3] == 'sportsman') {
       setState(() {
-        _pages.removeAt(1);
-        _items.removeAt(1);
+        isCoach = false;
       });
     }
+
+    setState(() {
+      if (isCoach) {
+        items = [
+          BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Запись'),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Мои спортсмены'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Профиль'),
+        ];
+      } else {
+        items = [
+          BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Запись'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Профиль'),
+        ];
+      }
+    });
   }
 
   @override
   void initState() {
+    loadRole();
 
-    Who();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: buildPage(_currentIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        items: _items,
+        items: items,
       ),
     );
   }
