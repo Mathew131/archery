@@ -21,7 +21,6 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      print('2');
       sl<Data>().token = await sl<Data>().loadToken();
 
       await sl<Data>().load();

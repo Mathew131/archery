@@ -52,7 +52,6 @@ class Data extends ChangeNotifier {
     return sportsmen;
   }
 
-
   // ------------------------------------------------------
 
   void removeTable(String name_note) {
@@ -79,7 +78,7 @@ class Data extends ChangeNotifier {
       cnt_ser = 6;
       cnt_shoot = 6;
     }
-    
+
     tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
     notifyListeners();
 
@@ -119,9 +118,14 @@ class Data extends ChangeNotifier {
     tables.clear();
     sportsmen.clear();
 
-    final snapshot = await FirebaseFirestore.instance.collection(token).doc('tables').get();
+    final tablesFuture = FirebaseFirestore.instance.collection(token).doc('tables').get();
+    final sportsmenFuture = FirebaseFirestore.instance.collection(token).doc('sportsmen').get();
 
-    final data = snapshot.data() ?? {};
+    final results = await Future.wait([tablesFuture, sportsmenFuture]);
+
+    final tablesSnapshot = results[0];
+
+    final data = tablesSnapshot.data() ?? {};
 
     for (final key in data.keys) {
       final encoded = data[key] as String;
@@ -137,9 +141,8 @@ class Data extends ChangeNotifier {
       tables[key] = table;
     }
 
-    final sportsmen_data = await FirebaseFirestore.instance.collection(token).doc('sportsmen').get();
-
-    sportsmen = (sportsmen_data.data()?['sportsmen'] as List?)?.cast<String>() ?? [];
+    final sportsmenSnapshot = results[1];
+    sportsmen = (sportsmenSnapshot.data()?['sportsmen'] as List?)?.cast<String>() ?? [];
 
   }
 
@@ -154,4 +157,25 @@ class Data extends ChangeNotifier {
       return '';
     }
   }
+
+  Future<List<String>> searchNotes(String date) async {
+    List<String> res = [];
+
+    final currentSportsmen = List<String>.from(sportsmen);
+
+    for (String curs in currentSportsmen) {
+      final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
+
+      final data = snapshot.data() ?? {};
+
+      for (final key in data.keys) {
+        if (key.split('_')[2] == date) {
+          res.add('$curs&$key');
+        }
+      }
+    }
+
+    return res;
+  }
+
 }

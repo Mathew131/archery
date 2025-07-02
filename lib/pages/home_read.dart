@@ -35,7 +35,6 @@ class _HomeReadState extends State<HomeRead> {
       // sl<Data>().token = await sl<Data>().loadToken();
       // sl<Data>().token = 'ios:Курченко:mathew.kurchenko23@gmail.com:Тренер';
 
-      print(sl<Data>().token);
       await sl<Data>().load();
       setState(() {
         notes = sl<Data>().getNotes();
@@ -164,58 +163,65 @@ class _HomeReadState extends State<HomeRead> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(56),
-        child: Container( // extra container for custom bottom shadows
-          decoration: BoxDecoration(
+        preferredSize: const Size.fromHeight(66),
+        child: Container(
+          decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, 0.2),
+                color: Color.fromRGBO(0, 0, 0, .2),
                 spreadRadius: 3,
                 blurRadius: 3,
                 offset: Offset(0, 1),
               ),
             ],
           ),
-          child: AppBar(
-            title: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedFilterDistance,
-                dropdownColor: Colors.white,
-                icon: Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                style: TextStyle(color: Colors.black, fontSize: 20),
-                items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '80м', '90м'].map((d) {
-                  return DropdownMenuItem(
-                    value: d,
-                    child: d == 'Все дистанции' ? Text('$d') : Text('Дистанция: $d'),
-                  );
-                }).toList(),
-                onChanged: (v) {
-                  setState(() {
-                    selectedFilterDistance = v!;
 
-                    current_notes = [];
-                    if (selectedFilterDistance != 'Все дистанции') {
-                      for (int i = 0; i < notes.length; ++i) {
-                        if ('$selectedFilterDistance  ' == notes[i].split('_')[1]) {
-                          current_notes.add(notes[i]);
-                        }
-                      }
-                      selectedDistance = 'Дистанция: $selectedFilterDistance';
-                    } else {
-                      for (int i = 0; i < notes.length; ++i) {
-                        current_notes.add(notes[i]);
-                      }
-                    }
-                  });
-                },
-              ),
-            ),
+          child: AppBar(
+            elevation: 0,
+            backgroundColor: const Color(0xFFf98948),
             centerTitle: true,
-            backgroundColor: Color(0xFFf98948),
-            // backgroundColor: Colors.deepOrangeAccent.shade200,
+
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 6),
+
+                Text(
+                  '${sl<Data>().token.split(':')[0]} ${sl<Data>().token.split(':')[1]}',
+                  style: const TextStyle(color: Colors.black, fontSize: 16),
+                ),
+
+                const SizedBox(height: 2),
+
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    isDense: true,
+                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                    value: selectedFilterDistance,
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(color: Colors.black, fontSize: 20),
+                    items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м',
+                      '60м', '70м', '80м', '90м'].map((d) => DropdownMenuItem(
+                      value: d,
+                      child: Text(d == 'Все дистанции' ? d : 'Дистанция: $d'),
+                    )).toList(),
+                    onChanged: (v) {
+                      setState(() {
+                        selectedFilterDistance = v!;
+                        current_notes = selectedFilterDistance == 'Все дистанции' ? List.from(notes) : notes.where((n) =>
+                        '$selectedFilterDistance  ' == n.split('_')[1]).toList();
+                        selectedDistance = selectedFilterDistance == 'Все дистанции' ? '' : 'Дистанция: $selectedFilterDistance';
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+
       body: Stack(children: [
         Center(
           child: Opacity(

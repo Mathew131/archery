@@ -8,6 +8,7 @@ import 'package:archery/pages/root.dart';
 import 'package:archery/pages/home_read.dart';
 import 'package:archery/pages/home.dart';
 import 'package:archery/pages/sportsmen.dart';
+import 'package:archery/pages/week_notes.dart';
 
 
 Future<Widget> createMainApp() async {
@@ -20,6 +21,7 @@ Future<Widget> createMainApp() async {
     initialRoute: loggedIn ? '/' : '/register',
     routes: {
       '/': (contest) => MainNavigation(),
+      '/week_notes': (contest) => WeekNotes(),
       '/home_read': (contest) => HomeRead(),
       '/register': (contest) => Register(),
       '/sportsmen': (contest) => Sportsmen(),

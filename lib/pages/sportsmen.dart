@@ -18,8 +18,6 @@ class _SportsmenState extends State<Sportsmen> {
 
   @override
   void initState() {
-    // home подгружает необходимый токен
-    print('3');
     setState(() {
       sportsmen = sl<Data>().getSportsmen();
     });
@@ -47,10 +45,8 @@ class _SportsmenState extends State<Sportsmen> {
 
             Future.microtask(() async {
               sl<Data>().token = temp;
-              // print('${sl<Data>().token} |||||||||||||||||||||||||||||||');
               await sl<Data>().load();
               sportsmen = sl<Data>().getSportsmen();
-              // print('${sportsmen} **************************************');
             });
           },
 
@@ -91,7 +87,7 @@ class _SportsmenState extends State<Sportsmen> {
           ),
           child: AppBar(
             title: DropdownButtonHideUnderline(
-              child: Text('Спортсмены')
+              child: Text('Мои спортсмены')
             ),
             automaticallyImplyLeading: false,
             centerTitle: true,
@@ -119,97 +115,119 @@ class _SportsmenState extends State<Sportsmen> {
         ),
       ]),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFF95d5b2),
-        elevation: 3,
-        child: Icon(Icons.add, color: Colors.black,),
-        onPressed: () {
-          showDialog(
-            useRootNavigator: true,
-            context: context,
-            builder: (ctx) => StatefulBuilder(
-              builder: (ctx2, setStateDialog) => AlertDialog(
-                contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      onChanged: (v) {
-                        setStateDialog(() {
-                          name = v;
-                          if (surname == '' && name == '') notFind = false;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Имя',
-                        hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-
-                    TextField(
-                      onChanged: (v) {
-                        setStateDialog(() {
-                          surname = v;
-                          if (surname == '' && name == '') notFind = false;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Фамилия',
-                        hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
-                      ),
-                    ),
-
-                    SizedBox(height: 24),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          String token_s = await sl<Data>().search_sportsman(name, surname);
-
-                          setStateDialog(() {
-                            if (token_s == '') {
-                              // спортсмен не найден
-                              notFind = true;
-                            } else {
-                              // спортсмен найдет и есть его токен
-                              notFind = false;
-                              setState(() {
-                                // sportsmen.add(token_s);
-
-                                sl<Data>().addSportsman(token_s);
-                              });
-                              Navigator.of(ctx).pop();
-                            }
-                          });
-
-                        },
-                        child: Text('Добавить'),
-                      ),
-                    ),
-
-                    if (notFind)
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 12),
-                          child: Text(
-                            'Спортсмен не найден',
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      )
-                  ],
-                ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  String temp = sl<Data>().token;
+                  await Navigator.pushNamed(context, '/week_notes');
+                  sl<Data>().token = temp;
+                  await sl<Data>().load();
+                  sportsmen = sl<Data>().getSportsmen();
+                },
+                child: Text('Их записи за неделю'),
               ),
             ),
-          ).then((_) {
-            setState(() {
-              notFind = false;
-            });
-          });;
-        },
-      ),
 
+            SizedBox(width: 16),
+
+            FloatingActionButton(
+              backgroundColor: Color(0xFF95d5b2),
+              elevation: 3,
+              child: Icon(Icons.add, color: Colors.black,),
+              onPressed: () {
+                showDialog(
+                  useRootNavigator: true,
+                  context: context,
+                  builder: (ctx) => StatefulBuilder(
+                    builder: (ctx2, setStateDialog) => AlertDialog(
+                      contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            onChanged: (v) {
+                              setStateDialog(() {
+                                name = v;
+                                if (surname == '' && name == '') notFind = false;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Имя',
+                              hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+
+                          TextField(
+                            onChanged: (v) {
+                              setStateDialog(() {
+                                surname = v;
+                                if (surname == '' && name == '') notFind = false;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Фамилия',
+                              hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
+                            ),
+                          ),
+
+                          SizedBox(height: 24),
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                String token_s = await sl<Data>().search_sportsman(name, surname);
+
+                                setStateDialog(() {
+                                  if (token_s == '') {
+                                    // спортсмен не найден
+                                    notFind = true;
+                                  } else {
+                                    // спортсмен найдет и есть его токен
+                                    notFind = false;
+                                    setState(() {
+                                      // sportsmen.add(token_s);
+
+                                      sl<Data>().addSportsman(token_s);
+                                    });
+                                    Navigator.of(ctx).pop();
+                                  }
+                                });
+
+                              },
+                              child: Text('Добавить'),
+                            ),
+                          ),
+
+                          if (notFind)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 12),
+                                child: Text(
+                                  'Спортсмен не найден',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                  ),
+                ).then((_) {
+                  setState(() {
+                    notFind = false;
+                  });
+                });;
+              },
+            ),
+
+          ],
+        ),
+      ),
 
     );
   }
