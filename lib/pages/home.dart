@@ -24,6 +24,7 @@ class _HomeState extends State<Home> {
       sl<Data>().token = await sl<Data>().loadToken();
 
       await sl<Data>().load();
+      await sl<Data>().save();
       setState(() {
         notes = sl<Data>().getNotes();
         current_notes = sl<Data>().getNotes();

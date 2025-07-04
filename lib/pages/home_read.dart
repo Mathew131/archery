@@ -23,7 +23,8 @@ class _HomeReadState extends State<HomeRead> {
     var args = ModalRoute.of(context)?.settings.arguments!;
     setState(() {
       if (args != null && args is String) {
-        sl<Data>().token = args;
+        // В память не сохраняем!!!!
+        sl<Data>().token = '${args.split(':')[0]}:${args.split(':')[1]}:${args.split(':')[2].replaceAll(',', '.')}:${args.split(':')[3]}';
       }
     });
   }

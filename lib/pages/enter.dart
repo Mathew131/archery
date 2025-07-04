@@ -2,49 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class Register extends StatefulWidget {
-  const Register({Key? key}) : super(key: key);
+class Enter extends StatefulWidget {
+  const Enter({Key? key}) : super(key: key);
 
   @override
-  State<Register> createState() => _RegisterState();
+  State<Enter> createState() => _EnterState();
 }
 
-class _RegisterState extends State<Register> {
+class _EnterState extends State<Enter> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  late String type = '';
-
-  Future<void> load_data() async {
-    final loggedIn = await sl<Data>().isLoggedIn();
-
-    if (loggedIn) {
-      String token = await sl<Data>().loadToken();
-      firstNameController.text = token.split(':')[0];
-      lastNameController.text = token.split(':')[1];
-      emailController.text = token.split(':')[2];
-      setState(() {
-        type = token.split(':')[3];
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    setState(() {
-      load_data();
-    });
-
-    super.initState();
-  }
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: Text('Вход')),
+      appBar: AppBar(title: Text('Вход')),
       body: Align(
         alignment: Alignment(0, 0),
         child: SingleChildScrollView(
@@ -55,40 +31,6 @@ class _RegisterState extends State<Register> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 320,
-                  child: TextFormField(
-                    controller: firstNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Имя',
-                      hintText: 'Введите имя',
-                      prefixIcon: Icon(Icons.person, color: Colors.green),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: MultiValidator([
-                      MinLengthValidator(2, errorText: 'Минимум 2 символа'),
-                    ]),
-                  ),
-                ),
-                SizedBox(height: 12),
-
-                SizedBox(
-                  width: 320,
-                  child: TextFormField(
-                    controller: lastNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Фамилия',
-                      hintText: 'Введите фамилию',
-                      prefixIcon: Icon(Icons.person, color: Colors.grey),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: MultiValidator([
-                      MinLengthValidator(2, errorText: 'Минимум 2 символа'),
-                    ]),
-                  ),
-                ),
-                SizedBox(height: 12),
-
                 SizedBox(
                   width: 320,
                   child: TextFormField(
@@ -105,73 +47,67 @@ class _RegisterState extends State<Register> {
                     ]),
                   ),
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 12),
 
                 SizedBox(
                   width: 320,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child:
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              type = 'sportsman';
-                            });
-                          },
-                          child: Text('Спортсмен'),
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: type == 'sportsman' ? Color(0xFF95d5b2) : null,
-                            foregroundColor: type == 'sportsman' ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(width: 24),
-
-                      Expanded(child:
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              type = 'coach';
-                            });
-                          },
-                          child: Text('Тренер'),
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: type == 'coach' ? Color(0xFF95d5b2) : null,
-                            foregroundColor: type == 'coach' ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: TextFormField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Пароль',
+                      hintText: 'Введите пароль',
+                      prefixIcon: Icon(Icons.lock, color: Colors.orange),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: MinLengthValidator(6, errorText: 'Минимум 6 символов'),
                   ),
                 ),
 
                 SizedBox(height: 24),
+
                 SizedBox(
-                  width: 320,
+                  width: 160,
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.black54,
                       foregroundColor: Colors.white,
-                      textStyle: TextStyle(fontSize: 22),
+                      textStyle: TextStyle(fontSize: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                     onPressed: () async {
-                      if (_formKey.currentState!.validate() && type != '') {
-                        // sl<Data>().tables.clear();
-                        await sl<Data>().saveToken(firstNameController.text, lastNameController.text, emailController.text, type);
-                        await Navigator.pushNamed(context, '/');
+                      final auth = FirebaseAuth.instance;
+
+                      try {
+                        final result = await auth.signInWithEmailAndPassword(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+
+                        final user = result.user;
+
+                        if (user != null && user.emailVerified) {
+                          await sl<Data>().searchAndSaveTokenByEmail(emailController.text);
+                          await Navigator.pushNamed(context, '/');
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        String msg = 'Ошибка входа';
+
+                        if (e.code == 'user-not-found') msg = 'Пользователь не найден';
+                        if (e.code == 'wrong-password') msg = 'Неверный пароль';
+                        if (e.code == 'invalid-email') msg = 'Неверный email';
+
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                       }
+
                     },
-                    child: Text('Вход'),
+                    child: Text('Войти'),
                   ),
                 ),
+
               ],
             ),
           ),
