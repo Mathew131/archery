@@ -23,8 +23,8 @@ class _HomeReadState extends State<HomeRead> {
     var args = ModalRoute.of(context)?.settings.arguments!;
     setState(() {
       if (args != null && args is String) {
-        // В память не сохраняем!!!!
-        sl<Data>().token = '${args.split(':')[0]}:${args.split(':')[1]}:${args.split(':')[2].replaceAll(',', '.')}:${args.split(':')[3]}';
+        sl<Data>().token = args;
+        // sl<Data>().token = '${args.split(':')[0]}:${args.split(':')[1]}:${args.split(':')[2].replaceAll(',', '.')}:${args.split(':')[3]}';
       }
     });
   }
@@ -42,30 +42,6 @@ class _HomeReadState extends State<HomeRead> {
         current_notes = sl<Data>().getNotes();
       });
     });
-  }
-
-  int lastWriteElem(int i_table, int index) {
-    var table = sl<Data>().getTable(current_notes[index]);
-    for (int i = table[i_table].length-1; i >= 0; --i) {
-      if (table[i_table][i].last != -1) {
-        return table[i_table][i].last;
-      }
-    }
-    return 0;
-  }
-
-  bool rg(int i_table, int index) {
-    var table = sl<Data>().getTable(current_notes[index]);
-
-    for (int i = 0; i < table[i_table].length; ++i) {
-      for (int j = 0; j < table[i_table][i].length; ++j) {
-        if (table[i_table][i][j] == -1) {
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   List<String> validDistance() {
@@ -94,12 +70,16 @@ class _HomeReadState extends State<HomeRead> {
           ),
 
           onPressed: () async {
-            await Navigator.pushNamed(context, '/table', arguments: [current_notes[index], 'hr']);
-            final notes = sl<Data>().getNotes();
-            setState(() {
-              this.notes = notes;
-              current_notes = notes;
-            });
+            sl<Data>().current_key_update = current_notes[index];
+            await Navigator.pushNamed(context, '/table', arguments: 'hr');
+            await sl<Data>().load();
+
+            if (mounted) {
+              setState(() {
+                notes = sl<Data>().getNotes();
+                current_notes = sl<Data>().getNotes();
+              });
+            }
           },
 
 
@@ -130,24 +110,24 @@ class _HomeReadState extends State<HomeRead> {
               Row(
                 children: [
                   Text(
-                    '${lastWriteElem(0, index)}',
-                    style: TextStyle(color: rg(0, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                    '${current_notes[index].split('_')[4]}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     ' + ',
                     style: TextStyle(color: Colors.black, fontSize: 16),
                   ),
                   Text(
-                    '${lastWriteElem(1, index)}',
-                    style: TextStyle(color: rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                    '${current_notes[index].split('_')[5]}',
+                    style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     ' = ',
                     style: TextStyle(color: Colors.black, fontSize: 16),
                   ),
                   Text(
-                    '${lastWriteElem(0, index) + lastWriteElem(1, index)}',
-                    style: TextStyle(color: rg(0, index) && rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                    '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
 
                   SizedBox(width: 32,)

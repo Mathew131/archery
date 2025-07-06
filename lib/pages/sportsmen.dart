@@ -20,6 +20,7 @@ class _SportsmenState extends State<Sportsmen> {
   void initState() {
     setState(() {
       sportsmen = sl<Data>().getSportsmen();
+      // print('$sportsmen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
     });
 
     super.initState();

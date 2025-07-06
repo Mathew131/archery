@@ -28,20 +28,23 @@ class _TablePageState extends State<TablePage> {
   bool Focus = false;
   bool isH = true;
 
-  late String name_note;
+  bool _initialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_initialized) return;
+
     setState(() {
       var args = ModalRoute.of(context)?.settings.arguments!;
-      if (args is List) {
-        if (args[1] == 'hr') isH = false;
-        name_note = args[0];
-        val = sl<Data>().getTable(name_note);
+      if (args is String && args == 'hr') {
+        isH = false;
       }
+      val = sl<Data>().getTable(sl<Data>().current_key_update);
+      _initialized = true;
 
-      if (name_note.split('_')[1] == '12м  ' || name_note.split('_')[1] == '18м  ') {
+
+      if (sl<Data>().current_key_update.split('_')[1] == '12м  ' || sl<Data>().current_key_update.split('_')[1] == '18м  ') {
         cnt_ser = 10;
         cnt_shoot = 3;
         flag = true;
@@ -317,7 +320,8 @@ class _TablePageState extends State<TablePage> {
         }
 
       }
-      sl<Data>().updateTable(name_note, val);
+
+      sl<Data>().updateTable(sl<Data>().current_key_update, val);
     });
   }
 
@@ -341,7 +345,7 @@ class _TablePageState extends State<TablePage> {
             ],
           ),
           child: AppBar(
-            title: Text(name_note.substring(0, name_note.indexOf('_')), style: TextStyle(fontSize: 20)),
+            title: Text(sl<Data>().current_key_update.substring(0, sl<Data>().current_key_update.indexOf('_')), style: TextStyle(fontSize: 20)),
             centerTitle: true,
             backgroundColor: Color(0xFFffbf69),
             scrolledUnderElevation: 0,

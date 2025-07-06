@@ -8,6 +8,7 @@ class Data extends ChangeNotifier {
   late String token;
   Map<String, List<List<List<int>>>> tables = {};
   List<String> sportsmen = [];
+  String current_key_update = '';
   late int cnt_ser;
   late int cnt_shoot;
 
@@ -21,7 +22,6 @@ class Data extends ChangeNotifier {
     var coachData = FirebaseFirestore.instance.collection('users').doc('coach_en').get();
     var sportsmenData = FirebaseFirestore.instance.collection('users').doc('sportsmen_en').get();
     var results = await Future.wait([coachData, sportsmenData]);
-
     var coachSnapshot = results[0];
 
     var data = coachSnapshot.data() ?? {};
@@ -90,7 +90,9 @@ class Data extends ChangeNotifier {
         .map((row) => List<int>.from(row))
         .toList())
         .toList();
-    tables.remove(old_name_note);
+    if (new_name_note != old_name_note) {
+      tables.remove(old_name_note);
+    }
     save();
   }
 
@@ -104,16 +106,19 @@ class Data extends ChangeNotifier {
     }
 
     tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
+    // print('$name_note ++++++++++++++++++++++++++++++++++++');
     notifyListeners();
 
     save();
   }
 
   List<List<List<int>>> getTable(String name_note) {
+    // print('$name_note ---------------------------------------- ${tables.keys}');
     return tables[name_note]!;
   }
 
   void updateTable(String name_note, List<List<List<int>>> table) {
+    // print('$name_note ^^^^^^^^^^^^^^^^^^^^^^^^^');
     tables[name_note] = table;
     notifyListeners();
 
@@ -124,11 +129,56 @@ class Data extends ChangeNotifier {
     return tables.keys.toList();
   }
 
+
+
+  int lastWriteElem(int i_table, String name) {
+    for (int i = tables[name]![i_table].length-1; i >= 0; --i) {
+      if (tables[name]![i_table][i].last != -1) {
+        return tables[name]![i_table][i].last;
+      }
+    }
+    return 0;
+  }
+
+  bool rg(int i_table, String name) {
+    for (int i = 0; i < tables[name]![i_table].length; ++i) {
+      for (int j = 0; j < tables[name]![i_table][i].length; ++j) {
+        if (tables[name]![i_table][i][j] == -1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   Future<void> save() async {
     final data = <String, String>{};
-    for (final e in tables.entries) {
-      data[e.key] = jsonEncode(e.value);
+    final oldKeys = List<String>.from(tables.keys);
+
+    // print('${tables.keys} до ***********************************');
+    for (final key in oldKeys) {
+      var lw0 = lastWriteElem(0, key);
+      var lw1 = lastWriteElem(1, key);
+      var rg0 = rg(0, key);
+      var rg1 = rg(1, key);
+
+      String newKey = '${key.split('_')[0]}_${key.split('_')[1]}_${key.split('_')[2]}_${key.split('_')[3]}_${lw0}_${lw1}_${rg0}_${rg1}';
+      data[newKey] = jsonEncode(tables[key]);
+
+
+      if (key != newKey) {
+        if (key == current_key_update) {
+          current_key_update = newKey;
+        }
+        tables[newKey] = tables[key]!
+            .map((table) => table.map((row) => List<int>.from(row)).toList())
+            .toList();
+
+        tables.remove(key);
+      }
     }
+    // print('${tables.keys} после *********************************** ${data.keys}');
+
     await FirebaseFirestore.instance.collection(token).doc('tables').set(data);
 
     String emailKey = token.split(':')[2].replaceAll('.', ','); // в ключе в firebase не надо точек

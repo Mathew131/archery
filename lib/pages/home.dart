@@ -24,36 +24,12 @@ class _HomeState extends State<Home> {
       sl<Data>().token = await sl<Data>().loadToken();
 
       await sl<Data>().load();
-      await sl<Data>().save();
+      // await sl<Data>().save();
       setState(() {
         notes = sl<Data>().getNotes();
         current_notes = sl<Data>().getNotes();
       });
     });
-  }
-
-  int lastWriteElem(int i_table, int index) {
-    var table = sl<Data>().getTable(current_notes[index]);
-    for (int i = table[i_table].length-1; i >= 0; --i) {
-      if (table[i_table][i].last != -1) {
-        return table[i_table][i].last;
-      }
-    }
-    return 0;
-  }
-
-  bool rg(int i_table, int index) {
-    var table = sl<Data>().getTable(current_notes[index]);
-
-    for (int i = 0; i < table[i_table].length; ++i) {
-      for (int j = 0; j < table[i_table][i].length; ++j) {
-        if (table[i_table][i][j] == -1) {
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   List<String> validDistance() {
@@ -86,12 +62,16 @@ class _HomeState extends State<Home> {
           ),
 
           onPressed: () async {
-            await Navigator.pushNamed(context, '/table', arguments: [current_notes[index], 'h']);
-            final notes = sl<Data>().getNotes();
-            setState(() {
-              this.notes = notes;
-              current_notes = notes;
-            });
+            sl<Data>().current_key_update = current_notes[index];
+            await Navigator.pushNamed(context, '/table', arguments: 'h');
+            // await sl<Data>().load();
+
+            if (mounted) {
+              setState(() {
+                notes = sl<Data>().getNotes();
+                current_notes = sl<Data>().getNotes();
+              });
+            }
           },
 
 
@@ -121,33 +101,25 @@ class _HomeState extends State<Home> {
 
                 Row(
                   children: [
-                    // Padding(
-                    //   padding: EdgeInsets.only(right: 10),
-                    //   child: Text(
-                    //     '${sl<Data>().getTable(notes[index]).first.last.last} + ${sl<Data>().getTable(notes[index]).last.last.last} = '
-                    //         '${sl<Data>().getTable(notes[index]).first.last.last + sl<Data>().getTable(notes[index]).last.last.last}',
-                    //     style: TextStyle(color: Color(0xFF52992c), fontSize: 18, fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
                     Text(
-                      '${lastWriteElem(0, index)}',
-                      style: TextStyle(color: rg(0, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      '${current_notes[index].split('_')[4]}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' + ',
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     Text(
-                      '${lastWriteElem(1, index)}',
-                      style: TextStyle(color: rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      '${current_notes[index].split('_')[5]}',
+                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' = ',
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     Text(
-                      '${lastWriteElem(0, index) + lastWriteElem(1, index)}',
-                      style: TextStyle(color: rg(0, index) && rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
 
                     Padding(
@@ -202,7 +174,6 @@ class _HomeState extends State<Home> {
                                                 }
                                               }
                                               current_notes[index] = name_note;
-
 
                                               name_note = 'Новая запись';
                                               selectedDistance = 'Дистанция: 18м';
@@ -394,7 +365,7 @@ class _HomeState extends State<Home> {
                             var now = DateTime.now();
                             String date = "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}";
 
-                            name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}';
+                            name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}_0_0_false_false';
                             notes.add(name_note);
                             current_notes.add(name_note);
 
