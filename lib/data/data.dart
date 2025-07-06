@@ -182,30 +182,67 @@ class Data extends ChangeNotifier {
     final data = all_sportsmen.data();
     String? email = data?['$name:$surname'];
     if (email != null) {
-      return '$name:$surname:$email:sportsman';
+      return '$name:$surname:${email.replaceAll(',', '.')}:sportsman';
     } else {
       return '';
     }
   }
 
-  Future<List<String>> searchNotes(String date) async {
-    List<String> res = [];
+  Future<void> searchNotes(int cnt_day, List<String> currentSportsmen, List<List<String>> itemsByDay) async {
+    // final currentSportsmen = List<String>.from(cur_sportsmen);
 
-    final currentSportsmen = List<String>.from(sportsmen);
+    var now = DateTime.now();
 
-    for (String curs in currentSportsmen) {
+    // for (String curs in currentSportsmen) {
+    //   final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
+    //
+    //   final data = snapshot.data() ?? {};
+    //
+    //   for (int j = 0; j < cnt_day; ++j) {
+    //     var cur_time = now.subtract(Duration(days: j));
+    //     String cur_day = "${cur_time.day.toString().padLeft(2, '0')}.${cur_time.month.toString().padLeft(2, '0')}.${cur_time.year}";
+    //     for (final key in data.keys) {
+    //       if (key.split('_')[2] == cur_day) {
+    //         itemsByDay[j].add('$curs&$key');
+    //       }
+    //     }
+    //   }
+    // }
+
+    // параллельно запускаем
+    await Future.wait(currentSportsmen.map((curs) async {
       final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
-
       final data = snapshot.data() ?? {};
 
-      for (final key in data.keys) {
-        if (key.split('_')[2] == date) {
-          res.add('$curs&$key');
+      for (int j = 0; j < cnt_day; ++j) {
+        var cur_time = now.subtract(Duration(days: j));
+        String cur_day = "${cur_time.day.toString().padLeft(2, '0')}.${cur_time.month.toString().padLeft(2, '0')}.${cur_time.year}";
+
+        for (final key in data.keys) {
+          if (key.split('_')[2] == cur_day) {
+            itemsByDay[j].add('$curs&$key');
+          }
         }
       }
-    }
-
-    return res;
+    }));
   }
+  // Future<List<String>> searchNotes(String date, List<String> cur_sportsmen) async {
+  //   List<String> res = [];
+  //
+  //   final currentSportsmen = List<String>.from(cur_sportsmen);
+  //
+  //   for (String curs in currentSportsmen) {
+  //     final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
+  //
+  //     final data = snapshot.data() ?? {};
+  //
+  //     for (final key in data.keys) {
+  //       if (key.split('_')[2] == date) {
+  //         res.add('$curs&$key');
+  //       }
+  //     }
+  //   }
+  //   return res;
+  // }
 
 }

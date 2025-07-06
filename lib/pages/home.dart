@@ -70,14 +70,15 @@ class _HomeState extends State<Home> {
 
   Widget button(BuildContext context, int index) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             // backgroundColor: Colors.orangeAccent, //Color.fromRGBO(255, 180, 85, 1),
             // backgroundColor: Color(0xFFffbf69),
             backgroundColor: Colors.orangeAccent.shade100,
+            // backgroundColor: Color(0xFFFFECB3),
             padding: EdgeInsets.symmetric(vertical: 12),
-            elevation: 3,
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -130,7 +131,7 @@ class _HomeState extends State<Home> {
                     // ),
                     Text(
                       '${lastWriteElem(0, index)}',
-                      style: TextStyle(color: rg(0, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: rg(0, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' + ',
@@ -138,7 +139,7 @@ class _HomeState extends State<Home> {
                     ),
                     Text(
                       '${lastWriteElem(1, index)}',
-                      style: TextStyle(color: rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' = ',
@@ -146,11 +147,11 @@ class _HomeState extends State<Home> {
                     ),
                     Text(
                       '${lastWriteElem(0, index) + lastWriteElem(1, index)}',
-                      style: TextStyle(color: rg(0, index) && rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: rg(0, index) && rg(1, index) ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
 
                     Padding(
-                      padding: EdgeInsets.only(right: 10),
+                      padding: EdgeInsets.only(right: 0),
                       child: PopupMenuButton<String>(
                         icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
                         onSelected: (value) {
@@ -255,13 +256,13 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
-        child: Container( // extra container for custom bottom shadows
+        child: Container(
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.2),
-                spreadRadius: 3,
-                blurRadius: 3,
+                spreadRadius: 2,
+                blurRadius: 2,
                 offset: Offset(0, 1),
               ),
             ],
@@ -308,22 +309,36 @@ class _HomeState extends State<Home> {
         ),
       ),
       body: Stack(children: [
-        Center(
-          child: Opacity(
-          opacity: 0.70,
-            child: Image.asset(
-              'assets/arch.jpg',
-              width: 300,
-              height: 300,
+        Padding(
+          // padding: EdgeInsets.only(bottom: 72),
+          padding: EdgeInsets.only(bottom: 0),
+          child: Center(
+            child: Opacity(
+              opacity: 0.2,
+              child: Image.asset(
+                'assets/arch.jpg',
+                width: 300,
+                height: 300,
+              ),
             ),
           ),
         ),
-        ListView.builder(
-          itemCount: current_notes.length,
-          itemBuilder: (context, index) {
-            return button(context, index);
-          },
-        ),
+        Column(
+          children: [
+            SizedBox(height: 6),
+            Expanded(
+              child: ListView.builder(
+                itemCount: current_notes.length,
+                itemBuilder: (context, index) {
+                  return button(context, index);
+                },
+              ),
+            ),
+            SizedBox(height: 6),
+          ],
+        )
+
+
       ]),
 
       floatingActionButton: FloatingActionButton(

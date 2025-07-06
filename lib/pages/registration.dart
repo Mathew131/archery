@@ -20,25 +20,25 @@ class _RegisterState extends State<Register> {
   final TextEditingController passwordController = TextEditingController();
   late String type = '';
 
-  Future<void> load_data() async {
-    final loggedIn = await sl<Data>().isLoggedIn();
-
-    if (loggedIn) {
-      String token = await sl<Data>().loadToken();
-      firstNameController.text = token.split(':')[0];
-      lastNameController.text = token.split(':')[1];
-      emailController.text = token.split(':')[2];
-      setState(() {
-        type = token.split(':')[3];
-      });
-    }
-  }
+  // Future<void> load_data() async {
+  //   final loggedIn = await sl<Data>().isLoggedIn();
+  //
+  //   if (loggedIn) {
+  //     String token = await sl<Data>().loadToken();
+  //     firstNameController.text = token.split(':')[0];
+  //     lastNameController.text = token.split(':')[1];
+  //     emailController.text = token.split(':')[2];
+  //     setState(() {
+  //       type = token.split(':')[3];
+  //     });
+  //   }
+  // }
 
   @override
   void initState() {
-    setState(() {
-      load_data();
-    });
+    // setState(() {
+    //   load_data();
+    // });
 
     super.initState();
   }
@@ -123,7 +123,7 @@ class _RegisterState extends State<Register> {
                     validator: MinLengthValidator(8, errorText: 'Минимум 8 символов'),
                   ),
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 12),
 
                 SizedBox(
                   width: 320,
@@ -166,10 +166,10 @@ class _RegisterState extends State<Register> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
 
                 SizedBox(
-                  width: 320,
+                  width: 250,
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -276,30 +276,39 @@ class _RegisterState extends State<Register> {
                         }
                       }
                     },
-                    child: Text('Зарегистрироваться'),
+                    child: Text('Зарегистрироваться', style: TextStyle(fontSize: 18, color: Colors.white,),),
                   ),
                 ),
 
-                SizedBox(height: 12),
+                SizedBox(height: 0),
 
-                SizedBox(
-                  width: 160,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black54,
-                      foregroundColor: Colors.white,
-                      textStyle: TextStyle(fontSize: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Уже есть аккаунт?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[700],
                       ),
                     ),
-                    onPressed: () async {
-                      await Navigator.pushNamed(context, '/enter');
-                    },
-                    child: Text('Войти'),
-                  ),
-                ),
+                    TextButton(
+                      onPressed: () async {
+                        await Navigator.pushNamed(context, '/enter');
+                      },
+                      child: Text(
+                        'Войти',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[700],
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    )
+                  ],
+                )
+
+
 
               ],
             ),

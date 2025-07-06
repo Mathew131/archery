@@ -60,20 +60,20 @@ class _EnterState extends State<Enter> {
                       prefixIcon: Icon(Icons.lock, color: Colors.orange),
                       border: OutlineInputBorder(),
                     ),
-                    validator: MinLengthValidator(6, errorText: 'Минимум 6 символов'),
+                    validator: MinLengthValidator(8, errorText: 'Минимум 8 символов'),
                   ),
                 ),
 
-                SizedBox(height: 24),
+                SizedBox(height: 30),
 
                 SizedBox(
                   width: 160,
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black54,
+                      backgroundColor: Colors.black38,
                       foregroundColor: Colors.white,
-                      textStyle: TextStyle(fontSize: 16),
+                      textStyle: TextStyle(fontSize: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),

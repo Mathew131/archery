@@ -82,12 +82,12 @@ class _HomeReadState extends State<HomeRead> {
 
   Widget button(BuildContext context, int index) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orangeAccent.shade100,
             padding: EdgeInsets.symmetric(vertical: 12),
-            elevation: 3,
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -164,14 +164,14 @@ class _HomeReadState extends State<HomeRead> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(66),
+        preferredSize: const Size.fromHeight(73),
         child: Container(
           decoration: const BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, .2),
-                spreadRadius: 3,
-                blurRadius: 3,
+                color: Color.fromRGBO(0, 0, 0, 0.2),
+                spreadRadius: 2,
+                blurRadius: 2,
                 offset: Offset(0, 1),
               ),
             ],
@@ -186,14 +186,14 @@ class _HomeReadState extends State<HomeRead> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 6),
+                const SizedBox(height: 16),
 
                 Text(
                   '${sl<Data>().token.split(':')[0]} ${sl<Data>().token.split(':')[1]}',
                   style: const TextStyle(color: Colors.black, fontSize: 16),
                 ),
 
-                const SizedBox(height: 2),
+                // const SizedBox(height: 2),
 
                 DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -226,7 +226,7 @@ class _HomeReadState extends State<HomeRead> {
       body: Stack(children: [
         Center(
           child: Opacity(
-            opacity: 0.70,
+            opacity: 0.20,
             child: Image.asset(
               'assets/arch.jpg',
               width: 300,
@@ -234,12 +234,20 @@ class _HomeReadState extends State<HomeRead> {
             ),
           ),
         ),
-        ListView.builder(
-          itemCount: current_notes.length,
-          itemBuilder: (context, index) {
-            return button(context, index);
-          },
-        ),
+        Column(
+          children: [
+            SizedBox(height: 6),
+            Expanded(
+              child: ListView.builder(
+                itemCount: current_notes.length,
+                itemBuilder: (context, index) {
+                  return button(context, index);
+                },
+              ),
+            ),
+            SizedBox(height: 6),
+          ],
+        )
       ]),
     );
   }

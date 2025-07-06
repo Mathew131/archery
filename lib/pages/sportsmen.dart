@@ -33,7 +33,7 @@ class _SportsmenState extends State<Sportsmen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orangeAccent.shade100,
             padding: EdgeInsets.symmetric(vertical: 12),
-            elevation: 3,
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -51,15 +51,15 @@ class _SportsmenState extends State<Sportsmen> {
           },
 
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
                 padding: EdgeInsets.only(left: 16, right: 4),
-                child: Text(sportsmen[index].split(':')[0], style: TextStyle(color: Colors.black, fontSize: 16),),
+                child: Text(sportsmen[index].split(':')[0], style: TextStyle(fontSize: 16),), // color: Colors.black,
               ),
               Padding(
                 padding: EdgeInsets.only(left: 4, right: 16),
-                child: Text(sportsmen[index].split(':')[1], style: TextStyle(color: Colors.black, fontSize: 16),),
+                child: Text(sportsmen[index].split(':')[1], style: TextStyle(fontSize: 16),), // color: Colors.black,
               )
             ]
           )
@@ -74,13 +74,13 @@ class _SportsmenState extends State<Sportsmen> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
-        child: Container( // extra container for custom bottom shadows
+        child: Container(
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.2),
-                spreadRadius: 3,
-                blurRadius: 3,
+                spreadRadius: 2,
+                blurRadius: 2,
                 offset: Offset(0, 1),
               ),
             ],
@@ -97,13 +97,17 @@ class _SportsmenState extends State<Sportsmen> {
         ),
       ),
       body: Stack(children: [
-        Center(
-          child: Opacity(
-          opacity: 0.7,
-            child: Image.asset(
-              'assets/arch.jpg',
-              width: 300,
-              height: 300,
+        Padding(
+          padding: EdgeInsets.only(top: 72),
+          // padding: EdgeInsets.only(top: 0),
+          child: Center(
+            child: Opacity(
+              opacity: 0.2,
+              child: Image.asset(
+                'assets/arch.jpg',
+                width: 300,
+                height: 300,
+              ),
             ),
           ),
         ),
@@ -122,13 +126,29 @@ class _SportsmenState extends State<Sportsmen> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  String temp = sl<Data>().token;
-                  await Navigator.pushNamed(context, '/week_notes');
-                  sl<Data>().token = temp;
-                  await sl<Data>().load();
-                  sportsmen = sl<Data>().getSportsmen();
+                  String prev = sl<Data>().token;
+
+                  await Navigator.pushNamed(
+                    context,
+                    '/week_notes',
+                    arguments: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        if (!mounted) return;
+
+                        sl<Data>().token = prev;
+                        await sl<Data>().load();
+
+                        if (!mounted) return;
+
+                        setState(() {
+                          sportsmen = sl<Data>().getSportsmen();
+                        });
+                      });
+                    },
+                  );
+
                 },
-                child: Text('Их записи за неделю'),
+                child: Text('Их записи за месяц'),
               ),
             ),
 

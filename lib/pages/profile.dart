@@ -45,6 +45,7 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
         child: Container( // extra container for custom bottom shadows
@@ -52,8 +53,8 @@ class _ProfileState extends State<Profile> {
             boxShadow: [
               BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.2),
-                spreadRadius: 3,
-                blurRadius: 3,
+                spreadRadius: 2,
+                blurRadius: 2,
                 offset: Offset(0, 1),
               ),
             ],
@@ -89,7 +90,7 @@ class _ProfileState extends State<Profile> {
               SizedBox(height: 24),
               Card(
                 color: _cardColor,
-                elevation: 3,
+                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -120,6 +121,7 @@ class _ProfileState extends State<Profile> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accentGreen,
                     foregroundColor: Colors.white,
+                    elevation: 2,
                     textStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),

@@ -334,8 +334,8 @@ class _TablePageState extends State<TablePage> {
             boxShadow: [
               BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.2),
-                spreadRadius: 3,
-                blurRadius: 3,
+                spreadRadius: 2,
+                blurRadius: 2,
                 offset: Offset(0, 1),
               ),
             ],
