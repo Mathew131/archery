@@ -22,9 +22,8 @@ class _HomeReadState extends State<HomeRead> {
     super.didChangeDependencies();
     var args = ModalRoute.of(context)?.settings.arguments!;
     setState(() {
-      if (args != null && args is String) {
+      if (args is String) {
         sl<Data>().token = args;
-        // sl<Data>().token = '${args.split(':')[0]}:${args.split(':')[1]}:${args.split(':')[2].replaceAll(',', '.')}:${args.split(':')[3]}';
       }
     });
   }
@@ -33,9 +32,6 @@ class _HomeReadState extends State<HomeRead> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      // sl<Data>().token = await sl<Data>().loadToken();
-      // sl<Data>().token = 'ios:Курченко:mathew.kurchenko23@gmail.com:Тренер';
-
       await sl<Data>().load();
       setState(() {
         notes = sl<Data>().getNotes();
@@ -70,18 +66,14 @@ class _HomeReadState extends State<HomeRead> {
           ),
 
           onPressed: () async {
-            sl<Data>().current_key_update = current_notes[index];
-            await Navigator.pushNamed(context, '/table', arguments: 'hr');
-            await sl<Data>().load();
+            sl<Data>().current_name = current_notes[index];
+            await Navigator.pushNamed(context, '/table', arguments: 'r');
 
-            if (mounted) {
-              setState(() {
-                notes = sl<Data>().getNotes();
-                current_notes = sl<Data>().getNotes();
-              });
-            }
+            setState(() {
+              notes = sl<Data>().getNotes();
+              current_notes = sl<Data>().getNotes();
+            });
           },
-
 
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -11,9 +11,12 @@ import 'package:archery/pages/sportsmen.dart';
 import 'package:archery/pages/week_notes.dart';
 import 'package:archery/pages/enter.dart';
 import 'package:archery/pages/profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<Widget> createMainApp() async {
   await Firebase.initializeApp();
+  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+
   setupDI();
 
   final loggedIn = await sl<Data>().isLoggedIn();

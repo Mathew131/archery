@@ -26,79 +26,73 @@ class _TablePageState extends State<TablePage> {
   late int currentJ = 0;
   bool keyboardVisible = false;
   bool Focus = false;
-  bool isH = true;
-
-  bool _initialized = false;
+  bool isWrite = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_initialized) return;
 
     setState(() {
       var args = ModalRoute.of(context)?.settings.arguments!;
-      if (args is String && args == 'hr') {
-        isH = false;
+      if (args is String && args == 'r') {
+        isWrite = false;
       }
-      val = sl<Data>().getTable(sl<Data>().current_key_update);
-      _initialized = true;
-
-
-      if (sl<Data>().current_key_update.split('_')[1] == '12м  ' || sl<Data>().current_key_update.split('_')[1] == '18м  ') {
-        cnt_ser = 10;
-        cnt_shoot = 3;
-        flag = true;
-        dop = 0;
-      } else {
-        cnt_ser = 6;
-        cnt_shoot = 6;
-        flag = false;
-        dop = 3;
-      }
-
-
-      sumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
-        final value = val[table][i][cnt_shoot];
-        for (int z = 0; z < cnt_shoot; ++z) {
-          if (val[table][i][z] != -1) {
-            return TextEditingController(text: value.toString());
-          }
-        }
-        return TextEditingController(text: '');
-      }));
-
-      sumSumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
-        final value = val[table][i][cnt_shoot+1];
-        for (int z = 0; z < cnt_shoot; ++z) {
-          if (val[table][i][z] != -1) {
-            return TextEditingController(text: value.toString());
-          }
-        }
-        return TextEditingController(text: '');
-      }));
-
-      inputControllers = List.generate(2, (table) =>
-          List.generate(cnt_ser, (i) =>
-              List.generate(cnt_shoot, (j) {
-                final value = val[table][i][j];
-                return TextEditingController(text: value != -1 ? value.toString() : '');
-              }),
-          ),
-      );
-
-      inputFocusNodes = List.generate(2, (table) =>
-          List.generate(cnt_ser, (i) =>
-              List.generate(cnt_shoot, (j) {
-                return FocusNode();
-              }),
-          ),
-      );
     });
   }
 
   @override
   void initState() {
     super.initState();
+    val = sl<Data>().getTable(sl<Data>().current_name);
+
+    if (sl<Data>().current_name.split('_')[1] == '12м  ' || sl<Data>().current_name.split('_')[1] == '18м  ') {
+      cnt_ser = 10;
+      cnt_shoot = 3;
+      flag = true;
+      dop = 0;
+    } else {
+      cnt_ser = 6;
+      cnt_shoot = 6;
+      flag = false;
+      dop = 3;
+    }
+
+    sumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
+      final value = val[table][i][cnt_shoot];
+      for (int z = 0; z < cnt_shoot; ++z) {
+        if (val[table][i][z] != -1) {
+          return TextEditingController(text: value.toString());
+        }
+      }
+      return TextEditingController(text: '');
+    }));
+
+    sumSumControllers = List.generate(2, (table) => List.generate(cnt_ser, (i) {
+      final value = val[table][i][cnt_shoot+1];
+      for (int z = 0; z < cnt_shoot; ++z) {
+        if (val[table][i][z] != -1) {
+          return TextEditingController(text: value.toString());
+        }
+      }
+      return TextEditingController(text: '');
+    }));
+
+    inputControllers = List.generate(2, (table) =>
+        List.generate(cnt_ser, (i) =>
+            List.generate(cnt_shoot, (j) {
+              final value = val[table][i][j];
+              return TextEditingController(text: value != -1 ? value.toString() : '');
+            }),
+        ),
+    );
+
+    inputFocusNodes = List.generate(2, (table) =>
+        List.generate(cnt_ser, (i) =>
+            List.generate(cnt_shoot, (j) {
+              return FocusNode();
+            }),
+        ),
+    );
   }
 
   @override
@@ -133,7 +127,6 @@ class _TablePageState extends State<TablePage> {
 
     super.dispose();
   }
-
 
   void insertText(BuildContext context, String text) {
     final t = currentTable;
@@ -257,7 +250,6 @@ class _TablePageState extends State<TablePage> {
     );
   }
 
-
   TextEditingController getController(int table, int i, int j) {
     final controller = inputControllers[table][i][j];
 
@@ -321,11 +313,9 @@ class _TablePageState extends State<TablePage> {
 
       }
 
-      sl<Data>().updateTable(sl<Data>().current_key_update, val);
+      sl<Data>().updateTable(sl<Data>().current_name, val);
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +335,7 @@ class _TablePageState extends State<TablePage> {
             ],
           ),
           child: AppBar(
-            title: Text(sl<Data>().current_key_update.substring(0, sl<Data>().current_key_update.indexOf('_')), style: TextStyle(fontSize: 20)),
+            title: Text(sl<Data>().current_name.substring(0, sl<Data>().current_name.indexOf('_')), style: TextStyle(fontSize: 20)),
             centerTitle: true,
             backgroundColor: Color(0xFFffbf69),
             scrolledUnderElevation: 0,
@@ -405,7 +395,7 @@ class _TablePageState extends State<TablePage> {
 
                                                                 focusNode: inputFocusNodes[table][i][j],
 
-                                                                showCursor: (Focus == false ? false : true) && isH,
+                                                                showCursor: (Focus == false ? false : true) && isWrite,
                                                                 enableInteractiveSelection: false,
 
                                                                 // onTap: () {
@@ -418,7 +408,7 @@ class _TablePageState extends State<TablePage> {
                                                                 //     // showCustomKeyboard(context, table, i, j);
                                                                 //   });
                                                                 // },
-                                                                onTap: isH == true ? () {
+                                                                onTap: isWrite == true ? () {
                                                                   setState(() {
                                                                     Focus = true;
                                                                     currentTable = table;
@@ -540,7 +530,7 @@ class _TablePageState extends State<TablePage> {
 
                                                                 focusNode: inputFocusNodes[table][i][j],
 
-                                                                showCursor: (Focus == false ? false : true) && isH,
+                                                                showCursor: (Focus == false ? false : true) && isWrite,
                                                                 enableInteractiveSelection: false,
 
                                                                 // onTap: () {
@@ -552,7 +542,7 @@ class _TablePageState extends State<TablePage> {
                                                                 //     keyboardVisible = true;
                                                                 //   });
                                                                 // },
-                                                                onTap: isH == true ? () {
+                                                                onTap: isWrite == true ? () {
                                                                   setState(() {
                                                                     Focus = true;
                                                                     currentTable = table;
@@ -761,8 +751,6 @@ class _TablePageState extends State<TablePage> {
             )
         ],
       )
-
-
     );
   }
 }

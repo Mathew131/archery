@@ -20,9 +20,7 @@ class _SportsmenState extends State<Sportsmen> {
   void initState() {
     setState(() {
       sportsmen = sl<Data>().getSportsmen();
-      // print('$sportsmen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
     });
-
     super.initState();
   }
 
@@ -44,11 +42,9 @@ class _SportsmenState extends State<Sportsmen> {
             String temp = sl<Data>().token;
             await Navigator.pushNamed(context, '/home_read', arguments: sportsmen[index],);
 
-            Future.microtask(() async {
-              sl<Data>().token = temp;
-              await sl<Data>().load();
-              sportsmen = sl<Data>().getSportsmen();
-            });
+            sl<Data>().token = temp;
+            await sl<Data>().load();
+            sportsmen = sl<Data>().getSportsmen();
           },
 
           child: Row(
@@ -188,6 +184,7 @@ class _SportsmenState extends State<Sportsmen> {
                             onChanged: (v) {
                               setStateDialog(() {
                                 surname = v;
+
                                 if (surname == '' && name == '') notFind = false;
                               });
                             },
@@ -211,9 +208,8 @@ class _SportsmenState extends State<Sportsmen> {
                                     // спортсмен найдет и есть его токен
                                     notFind = false;
                                     setState(() {
-                                      // sportsmen.add(token_s);
-
                                       sl<Data>().addSportsman(token_s);
+                                      sportsmen = sl<Data>().getSportsmen();
                                     });
                                     Navigator.of(ctx).pop();
                                   }
@@ -249,7 +245,6 @@ class _SportsmenState extends State<Sportsmen> {
           ],
         ),
       ),
-
     );
   }
 }

@@ -33,8 +33,8 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   void loadRole() async {
-    String who = await sl<Data>().loadToken();
-    if (who.split(':')[3] == 'sportsman') {
+    // String who = await sl<Data>().loadToken();
+    if (sl<Data>().token.split(':')[3] == 'sportsman') {
       setState(() {
         isCoach = false;
       });
@@ -61,7 +61,6 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     loadRole();
-
     super.initState();
   }
 

@@ -8,7 +8,7 @@ class Data extends ChangeNotifier {
   late String token;
   Map<String, List<List<List<int>>>> tables = {};
   List<String> sportsmen = [];
-  String current_key_update = '';
+  String current_name = '';
   late int cnt_ser;
   late int cnt_shoot;
 
@@ -54,10 +54,8 @@ class Data extends ChangeNotifier {
   }
 
   Future<bool> isLoggedIn() async {
-    final token = await loadToken();
-
+    token = await loadToken();
     return token.isNotEmpty;
-
   }
 
   // ------------------------------------------------------
@@ -73,7 +71,24 @@ class Data extends ChangeNotifier {
   }
 
   List<String> getSportsmen() {
-    return sportsmen;
+    List<String> sportsmen_in_order = List.from(sportsmen);
+    sportsmen_in_order.sort((a, b) {
+      final aParts = a.split(':');
+      final bParts = b.split(':');
+
+      final lastA = aParts[1];
+      final lastB = bParts[1];
+
+      final firstA = aParts[0];
+      final firstB = bParts[0];
+
+      final lastCompare = lastA.compareTo(lastB);
+      if (lastCompare != 0) return lastCompare;
+
+      return firstA.compareTo(firstB);
+    });
+
+    return sportsmen_in_order;
   }
 
   // ------------------------------------------------------
@@ -126,10 +141,10 @@ class Data extends ChangeNotifier {
   }
 
   List<String> getNotes() {
-    return tables.keys.toList();
+    var keys_in_order = tables.keys.toList();
+    keys_in_order.sort((a, b) => int.parse(b.split('_')[3]).compareTo(int.parse(a.split('_')[3])));
+    return keys_in_order;
   }
-
-
 
   int lastWriteElem(int i_table, String name) {
     for (int i = tables[name]![i_table].length-1; i >= 0; --i) {
@@ -167,8 +182,8 @@ class Data extends ChangeNotifier {
 
 
       if (key != newKey) {
-        if (key == current_key_update) {
-          current_key_update = newKey;
+        if (key == current_name) {
+          current_name = newKey;
         }
         tables[newKey] = tables[key]!
             .map((table) => table.map((row) => List<int>.from(row)).toList())
@@ -239,25 +254,7 @@ class Data extends ChangeNotifier {
   }
 
   Future<void> searchNotes(int cnt_day, List<String> currentSportsmen, List<List<String>> itemsByDay) async {
-    // final currentSportsmen = List<String>.from(cur_sportsmen);
-
     var now = DateTime.now();
-
-    // for (String curs in currentSportsmen) {
-    //   final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
-    //
-    //   final data = snapshot.data() ?? {};
-    //
-    //   for (int j = 0; j < cnt_day; ++j) {
-    //     var cur_time = now.subtract(Duration(days: j));
-    //     String cur_day = "${cur_time.day.toString().padLeft(2, '0')}.${cur_time.month.toString().padLeft(2, '0')}.${cur_time.year}";
-    //     for (final key in data.keys) {
-    //       if (key.split('_')[2] == cur_day) {
-    //         itemsByDay[j].add('$curs&$key');
-    //       }
-    //     }
-    //   }
-    // }
 
     // параллельно запускаем
     await Future.wait(currentSportsmen.map((curs) async {
@@ -276,23 +273,4 @@ class Data extends ChangeNotifier {
       }
     }));
   }
-  // Future<List<String>> searchNotes(String date, List<String> cur_sportsmen) async {
-  //   List<String> res = [];
-  //
-  //   final currentSportsmen = List<String>.from(cur_sportsmen);
-  //
-  //   for (String curs in currentSportsmen) {
-  //     final snapshot = await FirebaseFirestore.instance.collection(curs).doc('tables').get();
-  //
-  //     final data = snapshot.data() ?? {};
-  //
-  //     for (final key in data.keys) {
-  //       if (key.split('_')[2] == date) {
-  //         res.add('$curs&$key');
-  //       }
-  //     }
-  //   }
-  //   return res;
-  // }
-
 }

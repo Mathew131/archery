@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,14 +18,39 @@ class _HomeState extends State<Home> {
   String selectedDistance = 'Дистанция: 18м';
   String selectedFilterDistance = 'Все дистанции';
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //
+  //   final loadStart = DateTime.now();
+  //
+  //   Future.microtask(() async {
+  //     // sl<Data>().token = await sl<Data>().loadToken();
+  //
+  //     final dataLoadStart = DateTime.now();
+  //     await sl<Data>().load();
+  //     final dataLoadEnd = DateTime.now();
+  //
+  //     print('🔹 load() занял: ${dataLoadEnd.difference(dataLoadStart).inMilliseconds} мс');
+  //
+  //     setState(() {
+  //       notes = sl<Data>().getNotes();
+  //       current_notes = sl<Data>().getNotes();
+  //     });
+  //
+  //     // после отрисовки UI
+  //     SchedulerBinding.instance.addPostFrameCallback((_) {
+  //       final renderEnd = DateTime.now();
+  //       print('🔸 Время от initState до окончания render: ${renderEnd.difference(loadStart).inMilliseconds} мс');
+  //     });
+  //   });
+  // }
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
-      sl<Data>().token = await sl<Data>().loadToken();
-
+      // sl<Data>().token = await sl<Data>().loadToken();
       await sl<Data>().load();
-      // await sl<Data>().save();
       setState(() {
         notes = sl<Data>().getNotes();
         current_notes = sl<Data>().getNotes();
@@ -49,29 +75,22 @@ class _HomeState extends State<Home> {
       padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            // backgroundColor: Colors.orangeAccent, //Color.fromRGBO(255, 180, 85, 1),
-            // backgroundColor: Color(0xFFffbf69),
             backgroundColor: Colors.orangeAccent.shade100,
-            // backgroundColor: Color(0xFFFFECB3),
             padding: EdgeInsets.symmetric(vertical: 12),
             elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            // shadowColor: Colors.black12,
           ),
 
           onPressed: () async {
-            sl<Data>().current_key_update = current_notes[index];
-            await Navigator.pushNamed(context, '/table', arguments: 'h');
-            // await sl<Data>().load();
+            sl<Data>().current_name = current_notes[index];
+            await Navigator.pushNamed(context, '/table', arguments: 'w');
 
-            if (mounted) {
-              setState(() {
-                notes = sl<Data>().getNotes();
-                current_notes = sl<Data>().getNotes();
-              });
-            }
+            setState(() {
+              notes = sl<Data>().getNotes();
+              current_notes = sl<Data>().getNotes();
+            });
           },
 
 
@@ -134,8 +153,6 @@ class _HomeState extends State<Home> {
                               current_notes.removeAt(index);
                             });
                           } else if (value == 'rename') {
-
-
                             showDialog(
                               useRootNavigator: true,
                               context: context,
@@ -188,8 +205,6 @@ class _HomeState extends State<Home> {
                                 ),
                               ),
                             );
-
-
                           }
                         },
                         itemBuilder: (context) => [
@@ -198,23 +213,8 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                     ),
-
-                    // Padding(
-                    //   padding: EdgeInsets.only(right: 10),
-                    //   child: IconButton(
-                    //     icon: Icon(Icons.delete_outline, color: Colors.red.shade700, size: 24,),
-                    //     onPressed: () {
-                    //       setState(() {
-                    //         sl<Data>().removeTable(notes[index]);
-                    //         notes.removeAt(index);
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-
                   ],
                 )
-
               ]
           )
       ),
@@ -275,13 +275,11 @@ class _HomeState extends State<Home> {
             automaticallyImplyLeading: false,
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
-            // backgroundColor: Colors.deepOrangeAccent.shade200,
           ),
         ),
       ),
       body: Stack(children: [
         Padding(
-          // padding: EdgeInsets.only(bottom: 72),
           padding: EdgeInsets.only(bottom: 0),
           child: Center(
             child: Opacity(
@@ -308,14 +306,8 @@ class _HomeState extends State<Home> {
             SizedBox(height: 6),
           ],
         )
-
-
       ]),
-
       floatingActionButton: FloatingActionButton(
-        // backgroundColor: Colors.greenAccent,
-        // backgroundColor: Color(0xFF7ae582),
-        // backgroundColor: Color(0xFF74c69d),
         backgroundColor: Color(0xFF95d5b2),
         elevation: 3,
         child: Icon(Icons.add, color: Colors.black,),
@@ -334,18 +326,12 @@ class _HomeState extends State<Home> {
                       onChanged: (v) {
                         setStateDialog(() {
                           name_note = v;
-                          // List <String> ls = (notes.map((el) => el.split('_')[0])).toList();
-                          // isDuplicate = ls.contains(v);
                         });
                       },
                       decoration: InputDecoration(
                         hintText: 'Название',
                         hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
-                        // errorText: isDuplicate == true ? 'Такое имя уже существует' : null,
                       ),
-                      // inputFormatters: [
-                      //   LengthLimitingTextInputFormatter(16),
-                      // ],
                     ),
                     SizedBox(height: 16),
                     DropdownButton<String>(
@@ -366,8 +352,8 @@ class _HomeState extends State<Home> {
                             String date = "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}";
 
                             name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}_0_0_false_false';
-                            notes.add(name_note);
-                            current_notes.add(name_note);
+                            notes.insert(0, name_note);
+                            current_notes.insert(0, name_note);
 
                             sl<Data>().createTable(name_note);
                             name_note = 'Новая запись';
@@ -385,8 +371,6 @@ class _HomeState extends State<Home> {
           );
         },
       ),
-
-
     );
   }
 }
