@@ -573,48 +573,46 @@ class _TablePageState extends State<TablePage> {
       ),
       body: Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (int table = 0; table < 2; ++table) ... [
-                    Padding(
-                      padding: EdgeInsets.only(top: 24, bottom: 16),
-                      child: Text(
-                        '${table+1} дистанция',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                for (int table = 0; table < 2; ++table) ... [
+                  Padding(
+                    padding: EdgeInsets.only(top: 24, bottom: 16),
+                    child: Text(
+                      '${table+1} дистанция',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
-                    Column(
-                      children: [
-                        for (int i = 0; i < cnt_ser; i++)
-                          Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              child:
-                              Column(
-                                children: [
-                                  if (cnt_ser == 6)
-                                    row_of_cells(table, i, 0, true, false),
-                                  Padding(
-                                    padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
-                                    child: row_of_cells(table, i, dop, is12_18, true),
-                                  )
-                                ],
-                              )
-                          ),
-                      ],
-                    ),
-                  ],
+                  ),
+                  Column(
+                    children: [
+                      for (int i = 0; i < cnt_ser; i++)
+                        Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child:
+                            Column(
+                              children: [
+                                if (cnt_ser == 6)
+                                  row_of_cells(table, i, 0, true, false),
+                                Padding(
+                                  padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
+                                  child: row_of_cells(table, i, dop, is12_18, true),
+                                )
+                              ],
+                            )
+                        ),
+                    ],
+                  ),
+                ],
 
-                  last_cell(),
+                last_cell(),
 
-                  SizedBox(height: 304),
-                ]
-              )
+                SizedBox(height: 304),
+              ]
             )
           ),
 
