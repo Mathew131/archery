@@ -18,7 +18,8 @@ class _TablePageState extends State<TablePage> {
   late List<List<List<int>>> val;
   late int cnt_ser;
   late int cnt_shoot;
-  late bool flag;
+  late bool isVisible;
+  late bool is12_18;
   late int dop;
 
   late int currentTable = 0;
@@ -48,12 +49,14 @@ class _TablePageState extends State<TablePage> {
     if (sl<Data>().current_name.split('_')[1] == '12м  ' || sl<Data>().current_name.split('_')[1] == '18м  ') {
       cnt_ser = 10;
       cnt_shoot = 3;
-      flag = true;
+      isVisible = true;
+      is12_18 = true;
       dop = 0;
     } else {
       cnt_ser = 6;
       cnt_shoot = 6;
-      flag = false;
+      isVisible = false;
+      is12_18 = false;
       dop = 3;
     }
 
@@ -298,15 +301,15 @@ class _TablePageState extends State<TablePage> {
           }
         }
 
-        bool flag = true;
+        bool isVisible = true;
         for (int w = 0; w < cnt_shoot; ++w) {
           if (val[table][z][w] != -1) {
             sumControllers[table][z].text = val[table][z][cnt_shoot].toString();
             sumSumControllers[table][z].text = val[table][z][cnt_shoot+1].toString();
-            flag = false;
+            isVisible = false;
           }
         }
-        if (flag) {
+        if (isVisible) {
           sumControllers[table][z].text = '';
           sumSumControllers[table][z].text = '';
         }
@@ -315,6 +318,232 @@ class _TablePageState extends State<TablePage> {
 
       sl<Data>().updateTable(sl<Data>().current_name, val);
     });
+  }
+
+  Widget row_of_cells(int table, int i, int dop, bool isVisibleNumber, bool isVisibleCell) {
+    return Row(
+      children: [
+        Visibility(
+          visible: isVisibleNumber,
+          maintainState: true,
+          maintainAnimation: true,
+          maintainSize: true,
+          maintainSemantics: false,
+          maintainInteractivity: false,
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: Colors.grey.shade200,
+            child: Text(
+              '${i + 1}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+
+        for (int j = dop; j < 3+dop; j++) ... [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: TextField(
+                  readOnly: false,
+
+                  focusNode: inputFocusNodes[table][i][j],
+
+                  showCursor: Focus && isWrite,
+                  enableInteractiveSelection: false,
+
+                  onTap: isWrite == true ? () {
+                    setState(() {
+                      Focus = true;
+                      currentTable = table;
+                      currentI = i;
+                      currentJ = j;
+                      keyboardVisible = true;
+                    });
+                  } : null,
+
+                  controller: getController(table, i, j),
+
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
+
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.none,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: BorderSide(
+                        color: (table == currentTable && i == currentI && j == currentJ) && Focus
+                            ? Colors.orange
+                            : Colors.grey,
+                        width: (table == currentTable && i == currentI && j == currentJ) && Focus ? 3 : 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+
+        Expanded(child:
+          Visibility(
+            visible: isVisibleCell,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            maintainSemantics: false,
+            maintainInteractivity: false,
+            child: Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: TextField(
+                    textAlign: TextAlign.center,
+                    controller: sumControllers[table][i],
+                    readOnly: true,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+
+                      filled: true,
+                      fillColor: i == cnt_ser-1 ? Colors.amber.shade100 : Colors.amber.shade50,
+
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: BorderSide(
+                          color: Colors.indigo,
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+            ),
+          ),
+        ),
+
+        Expanded(child:
+          Visibility(
+            visible: isVisibleCell,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            maintainSemantics: false,
+            maintainInteractivity: false,
+            child: Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: TextField(
+                    textAlign: TextAlign.center,
+                    controller: sumSumControllers[table][i],
+                    readOnly: true,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+
+                      filled: true,
+                      fillColor: i == cnt_ser-1 ? Colors.amber.shade100 : Colors.amber.shade50,
+
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: BorderSide(
+                          color: Colors.indigo,
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+            ),
+          ),
+        ),
+
+
+      ],
+    );
+  }
+
+  Widget last_cell() {
+    return  Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          Visibility(
+            visible: false,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            maintainSemantics: false,
+            maintainInteractivity: false,
+            child:
+            CircleAvatar(
+              radius: 16,
+              child: Text(''),
+            ),
+          ),
+          for (int z = 0; z < 5; ++z) ... [
+            Expanded(
+                child:
+                Visibility(
+                  visible: z != 4 ? false : true,
+                  maintainState: true,
+                  maintainAnimation: true,
+                  maintainSize: true,
+                  maintainSemantics: false,
+                  maintainInteractivity: false,
+                  child:
+                  Padding(
+                      padding: EdgeInsets.only(left: 8),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          controller: TextEditingController(
+                            text: val[0][cnt_ser-1][cnt_shoot + 1] != -1 && val[1][cnt_ser-1][cnt_shoot + 1] != -1 ?
+                            (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',
+                          ),
+                          readOnly: true,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.amber.shade100,
+
+                            border: OutlineInputBorder(),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(
+                                color: Colors.indigo,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                  ),
+                )
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -344,402 +573,49 @@ class _TablePageState extends State<TablePage> {
       ),
       body: Stack(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: SafeArea(
-                      child: SingleChildScrollView(
-                          child: Column(
-                              children: [
-                                for (int table = 0; table < 2; ++table) ... [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  for (int table = 0; table < 2; ++table) ... [
+                    Padding(
+                      padding: EdgeInsets.only(top: 24, bottom: 16),
+                      child: Text(
+                        '${table+1} дистанция',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        for (int i = 0; i < cnt_ser; i++)
+                          Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              child:
+                              Column(
+                                children: [
+                                  if (cnt_ser == 6)
+                                    row_of_cells(table, i, 0, true, false),
                                   Padding(
-                                    padding: EdgeInsets.only(top: 24, bottom: 16),
-                                    child: Text(
-                                      '${table+1} дистанция',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  Column(
-                                    children: [
-                                      for (int i = 0; i < cnt_ser; i++)
-                                        Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            child:
-                                            Column(
-                                              children: [
-                                                if (cnt_ser == 6)
-                                                  Row(
-                                                    children: [
-                                                      CircleAvatar(
-                                                        radius: 16,
-                                                        backgroundColor: Colors.grey.shade200,
-                                                        child: Text(
-                                                          '${i + 1}',
-                                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                                        ),
-                                                      ),
-
-                                                      for (int j = 0; j < 3; j++) ... [
-                                                        Expanded(
-                                                          child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(
-                                                                readOnly: false,
-
-                                                                focusNode: inputFocusNodes[table][i][j],
-
-                                                                showCursor: (Focus == false ? false : true) && isWrite,
-                                                                enableInteractiveSelection: false,
-
-                                                                // onTap: () {
-                                                                //   setState(() {
-                                                                //     Focus = true;
-                                                                //     currentTable = table;
-                                                                //     currentI = i;
-                                                                //     currentJ = j;
-                                                                //     keyboardVisible = true;
-                                                                //     // showCustomKeyboard(context, table, i, j);
-                                                                //   });
-                                                                // },
-                                                                onTap: isWrite == true ? () {
-                                                                  setState(() {
-                                                                    Focus = true;
-                                                                    currentTable = table;
-                                                                    currentI = i;
-                                                                    currentJ = j;
-                                                                    keyboardVisible = true;
-                                                                  });
-                                                                } : null,
-
-                                                                controller: getController(table, i, j),
-
-                                                                style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight: FontWeight.w400,
-                                                                ),
-
-                                                                textAlign: TextAlign.center,
-                                                                keyboardType: TextInputType.none,
-                                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-
-                                                                decoration: InputDecoration(
-                                                                  border: OutlineInputBorder(),
-                                                                  // enabledBorder: OutlineInputBorder(
-                                                                  //   borderRadius: BorderRadius.circular(4),
-                                                                  //   borderSide: BorderSide(
-                                                                  //     color: (table == currentTable && i == currentI && j == currentJ)
-                                                                  //         ? Colors.orange
-                                                                  //         : Colors.grey,
-                                                                  //     width: (table == currentTable && i == currentI && j == currentJ) ? 3 : 1,
-                                                                  //   ),
-                                                                  // ),
-                                                                  focusedBorder: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.circular(4),
-                                                                    borderSide: BorderSide(
-                                                                      color: (table == currentTable && i == currentI && j == currentJ) && Focus
-                                                                          ? Colors.orange
-                                                                          : Colors.grey,
-                                                                      width: (table == currentTable && i == currentI && j == currentJ) && Focus ? 3 : 1,
-                                                                    ),
-                                                                  ),
-                                                                ),
-
-                                                                // onChanged: (v) {
-                                                                //   onValueChanged(v, table, i, j);
-                                                                // },
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                      Expanded(child:
-                                                      Visibility(
-                                                        visible: false,
-                                                        maintainState: true,
-                                                        maintainAnimation: true,
-                                                        maintainSize: true,
-                                                        maintainSemantics: false,
-                                                        maintainInteractivity: false,
-                                                        child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(),
-                                                            )
-                                                        ),
-                                                      ),
-                                                      ),
-
-                                                      Expanded(child:
-                                                      Visibility(
-                                                        visible: false,
-                                                        maintainState: true,
-                                                        maintainAnimation: true,
-                                                        maintainSize: true,
-                                                        maintainSemantics: false,
-                                                        maintainInteractivity: false,
-                                                        child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(),
-                                                            )
-                                                        ),
-                                                      ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                Padding(
-                                                  padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
-                                                  child: Row(
-                                                    children: [
-                                                      Visibility(
-                                                        visible: flag,
-                                                        maintainState: true,
-                                                        maintainAnimation: true,
-                                                        maintainSize: true,
-                                                        maintainSemantics: false,
-                                                        maintainInteractivity: false,
-                                                        child: CircleAvatar(
-                                                          radius: 16,
-                                                          backgroundColor: Colors.grey.shade200,
-                                                          child: Text(
-                                                            '${i + 1}',
-                                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                                          ),
-                                                        ),
-                                                      ),
-
-
-
-                                                      for (int j = dop; j < 3+dop; j++) ... [
-                                                        Expanded(
-                                                          child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(
-                                                                readOnly: false,
-
-                                                                focusNode: inputFocusNodes[table][i][j],
-
-                                                                showCursor: (Focus == false ? false : true) && isWrite,
-                                                                enableInteractiveSelection: false,
-
-                                                                // onTap: () {
-                                                                //   setState(() {
-                                                                //     Focus = true;
-                                                                //     currentTable = table;
-                                                                //     currentI = i;
-                                                                //     currentJ = j;
-                                                                //     keyboardVisible = true;
-                                                                //   });
-                                                                // },
-                                                                onTap: isWrite == true ? () {
-                                                                  setState(() {
-                                                                    Focus = true;
-                                                                    currentTable = table;
-                                                                    currentI = i;
-                                                                    currentJ = j;
-                                                                    keyboardVisible = true;
-                                                                  });
-                                                                } : null,
-
-                                                                controller: getController(table, i, j),
-
-                                                                style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight: FontWeight.w400,
-                                                                ),
-
-                                                                textAlign: TextAlign.center,
-                                                                keyboardType: TextInputType.none,
-                                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-
-                                                                decoration: InputDecoration(
-                                                                  border: OutlineInputBorder(),
-                                                                  // enabledBorder: OutlineInputBorder(
-                                                                  //   borderRadius: BorderRadius.circular(4),
-                                                                  //   borderSide: BorderSide(
-                                                                  //     color: (table == currentTable && i == currentI && j == currentJ)
-                                                                  //         ? Colors.orange
-                                                                  //         : Colors.grey,
-                                                                  //     width: (table == currentTable && i == currentI && j == currentJ) ? 3 : 1,
-                                                                  //   ),
-                                                                  // ),
-                                                                  focusedBorder: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.circular(4),
-                                                                    borderSide: BorderSide(
-                                                                      color: (table == currentTable && i == currentI && j == currentJ) && Focus
-                                                                          ? Colors.orange
-                                                                          : Colors.grey,
-                                                                      width: (table == currentTable && i == currentI && j == currentJ) && Focus ? 3 : 1,
-                                                                    ),
-                                                                  ),
-                                                                ),
-
-                                                                // onChanged: (v) {
-                                                                //   onValueChanged(v, table, i, j);
-                                                                // },
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                      Expanded(
-                                                        child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(
-                                                                textAlign: TextAlign.center,
-                                                                controller: sumControllers[table][i],
-                                                                readOnly: true,
-                                                                style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight: FontWeight.w600,
-                                                                ),
-                                                                decoration: InputDecoration(
-                                                                  filled: true,
-                                                                  fillColor: Colors.amber.shade50,
-
-                                                                  border: OutlineInputBorder(),
-                                                                  focusedBorder: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.circular(4),
-                                                                    borderSide: BorderSide(
-                                                                      color: Colors.indigo,
-                                                                      width: 3,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            )
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        child: Padding(
-                                                            padding: EdgeInsets.only(left: 8),
-                                                            child: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: TextField(
-                                                                textAlign: TextAlign.center,
-                                                                controller: sumSumControllers[table][i],
-                                                                readOnly: true,
-                                                                style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight: FontWeight.w600,
-                                                                ),
-                                                                decoration: InputDecoration(
-
-                                                                  filled: true,
-                                                                  fillColor: i == cnt_ser-1 ? Colors.amber.shade100 : Colors.amber.shade50,
-
-                                                                  border: OutlineInputBorder(),
-                                                                  focusedBorder: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.circular(4),
-                                                                    borderSide: BorderSide(
-                                                                      color: Colors.indigo,
-                                                                      width: 3,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            )
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              ],
-                                            )
-                                        ),
-                                    ],
-                                  ),
+                                    padding: cnt_ser == 6 ? EdgeInsets.only(top: 8) : EdgeInsets.only(top: 0),
+                                    child: row_of_cells(table, i, dop, is12_18, true),
+                                  )
                                 ],
-                                Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      child: Row(
-                                        children: [
-                                          Visibility(
-                                            visible: false,
-                                            maintainState: true,
-                                            maintainAnimation: true,
-                                            maintainSize: true,
-                                            maintainSemantics: false,
-                                            maintainInteractivity: false,
-                                            child:
-                                            CircleAvatar(
-                                              radius: 16,
-                                              child: Text(''),
-                                            ),
-                                          ),
-                                          for (int z = 0; z < 5; ++z) ... [
-                                            Expanded(
-                                                child:
-                                                Visibility(
-                                                  visible: z != 4 ? false : true,
-                                                  maintainState: true,
-                                                  maintainAnimation: true,
-                                                  maintainSize: true,
-                                                  maintainSemantics: false,
-                                                  maintainInteractivity: false,
-                                                  child:
-                                                  Padding(
-                                                      padding: EdgeInsets.only(left: 8),
-                                                      child: AspectRatio(
-                                                        aspectRatio: 1,
-                                                        child: TextField(
-                                                          textAlign: TextAlign.center,
-                                                          controller: TextEditingController(
-                                                            text: val[0][cnt_ser-1][cnt_shoot + 1] != -1 && val[1][cnt_ser-1][cnt_shoot + 1] != -1 ?
-                                                            (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',
-                                                          ),
-                                                          readOnly: true,
-                                                          style: TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                          decoration: InputDecoration(
-                                                            filled: true,
-                                                            fillColor: Colors.amber.shade100,
+                              )
+                          ),
+                      ],
+                    ),
+                  ],
 
-                                                            border: OutlineInputBorder(),
-                                                            focusedBorder: OutlineInputBorder(
-                                                              borderRadius: BorderRadius.circular(4),
-                                                              borderSide: BorderSide(
-                                                                color: Colors.indigo,
-                                                                width: 3,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                  ),
-                                                )
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                SizedBox(height: 304),
-                              ]
-                          )
-                      )
-                  ),
-                ),
-              ),
-            ],
+                  last_cell(),
+
+                  SizedBox(height: 304),
+                ]
+              )
+            )
           ),
 
           if (keyboardVisible)
