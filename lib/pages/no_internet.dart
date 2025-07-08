@@ -24,7 +24,7 @@ class NoInternetApp extends StatelessWidget {
                 Icon(Icons.wifi_off, size: 80, color: Colors.grey),
                 SizedBox(height: 24),
                 Text(
-                  'Для корректной работы необходимо\nинтернет-соединение',
+                  'Нет доступа в интернет',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18),
                 ),

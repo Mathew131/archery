@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -18,38 +18,10 @@ class _HomeState extends State<Home> {
   String selectedDistance = 'Дистанция: 18м';
   String selectedFilterDistance = 'Все дистанции';
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //
-  //   final loadStart = DateTime.now();
-  //
-  //   Future.microtask(() async {
-  //     // sl<Data>().token = await sl<Data>().loadToken();
-  //
-  //     final dataLoadStart = DateTime.now();
-  //     await sl<Data>().load();
-  //     final dataLoadEnd = DateTime.now();
-  //
-  //     print('🔹 load() занял: ${dataLoadEnd.difference(dataLoadStart).inMilliseconds} мс');
-  //
-  //     setState(() {
-  //       notes = sl<Data>().getNotes();
-  //       current_notes = sl<Data>().getNotes();
-  //     });
-  //
-  //     // после отрисовки UI
-  //     SchedulerBinding.instance.addPostFrameCallback((_) {
-  //       final renderEnd = DateTime.now();
-  //       print('🔸 Время от initState до окончания render: ${renderEnd.difference(loadStart).inMilliseconds} мс');
-  //     });
-  //   });
-  // }
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
-      // sl<Data>().token = await sl<Data>().loadToken();
       await sl<Data>().load();
       setState(() {
         notes = sl<Data>().getNotes();
@@ -239,11 +211,10 @@ class _HomeState extends State<Home> {
             ],
           ),
           child: AppBar(
+
             title: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
+              child: DropdownButton2<String>(
                 value: selectedFilterDistance,
-                dropdownColor: Colors.white,
-                icon: Icon(Icons.keyboard_arrow_down, color: Colors.black),
                 style: TextStyle(color: Colors.black, fontSize: 20),
                 items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '80м', '90м'].map((d) {
                   return DropdownMenuItem(
@@ -251,6 +222,13 @@ class _HomeState extends State<Home> {
                     child: d == 'Все дистанции' ? Text('$d') : Text('Дистанция: $d'),
                   );
                 }).toList(),
+                dropdownStyleData: DropdownStyleData(
+                  // width: 220,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                ),
                 onChanged: (v) {
                   setState(() {
                     selectedFilterDistance = v!;
@@ -292,19 +270,14 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
-        Column(
-          children: [
-            SizedBox(height: 6),
-            Expanded(
-              child: ListView.builder(
-                itemCount: current_notes.length,
-                itemBuilder: (context, index) {
-                  return button(context, index);
-                },
-              ),
-            ),
-            SizedBox(height: 6),
-          ],
+        Padding(
+          padding: EdgeInsets.only(top: 6, bottom: 6),
+          child: ListView.builder(
+            itemCount: current_notes.length,
+            itemBuilder: (context, index) {
+              return button(context, index);
+            },
+          ),
         )
       ]),
       floatingActionButton: FloatingActionButton(
@@ -320,7 +293,7 @@ class _HomeState extends State<Home> {
                 contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     TextField(
                       onChanged: (v) {
@@ -334,15 +307,26 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    DropdownButton<String>(
-                      value: selectedDistance,
-                      underline: SizedBox(),
-                      hint: Text(selectedDistance),
+
+                    DropdownButton2<String>(
                       isExpanded: true,
-                      items: validDistance().map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+                      value: selectedDistance,
+                      items: validDistance().map((v) => DropdownMenuItem(
+                        value: v,
+                        child: Text(v, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+                      )).toList(),
                       onChanged: (v) => setStateDialog(() => selectedDistance = v!),
+                      dropdownStyleData: DropdownStyleData(
+                        maxHeight: 300,
+                        width: 235,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                    SizedBox(height: 24),
+
+                    SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
                         onPressed: () {

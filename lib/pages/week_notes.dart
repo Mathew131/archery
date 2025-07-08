@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
-// import 'package:synchronized/synchronized.dart';
 
 class WeekNotes extends StatefulWidget {
   const WeekNotes({super.key});
@@ -59,28 +58,11 @@ class _WeekNotesState extends State<WeekNotes> {
     }
   }
 
-  // final Stopwatch dataStopwatch = Stopwatch();
-  // final Stopwatch renderStopwatch = Stopwatch();
-
   @override
   void initState() {
     super.initState();
     cur_sportsmen = List<String>.from(sl<Data>().getSportsmen());
     loadNotes();
-
-    // dataStopwatch.start();
-
-    // loadNotes().then((_) {
-    //   dataStopwatch.stop();
-    //   print('Загрузка данных заняла: ${dataStopwatch.elapsedMilliseconds} мс');
-    //
-    //   renderStopwatch.start();
-    //
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     renderStopwatch.stop();
-    //     print('Отрисовка UI заняла: ${renderStopwatch.elapsedMilliseconds} мс');
-    //   });
-    // });
   }
 
   Widget button(BuildContext context, String text) {
