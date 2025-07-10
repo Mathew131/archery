@@ -25,13 +25,13 @@ class _SportsmenState extends State<Sportsmen> {
   }
 
 
-  Widget button(BuildContext context, int index) {
+  Widget button(BuildContext context, int index, bool isLast) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 12 : 0),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orangeAccent.shade100,
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 11),
             elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -48,15 +48,42 @@ class _SportsmenState extends State<Sportsmen> {
           },
 
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: EdgeInsets.only(left: 16, right: 4),
-                child: Text(sportsmen[index].split(':')[0], style: TextStyle(fontSize: 16),), // color: Colors.black,
+              Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 16, right: 4),
+                    child: Text('${index+1})', style: TextStyle(fontSize: 16, color: Colors.black),), // color: Colors.black,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 4, right: 4),
+                    child: Text(sportsmen[index].split(':')[1], style: TextStyle(fontSize: 16),),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 4, right: 16),
+                    child: Text(sportsmen[index].split(':')[0], style: TextStyle(fontSize: 16),),
+                  )
+                ],
               ),
               Padding(
-                padding: EdgeInsets.only(left: 4, right: 16),
-                child: Text(sportsmen[index].split(':')[1], style: TextStyle(fontSize: 16),), // color: Colors.black,
+                padding: EdgeInsets.only(right: 0),
+                child: SizedBox(
+                  width: 48,
+                  height: 32,
+                  child: PopupMenuButton<String>(
+                    icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
+                    onSelected: (value) {
+                      setState(() {
+                        sl<Data>().deleteSportsman(sportsmen[index]);
+                        sportsmen.removeAt(index);
+                      });
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                    ],
+                  ),
+                ),
               )
             ]
           )
@@ -111,13 +138,14 @@ class _SportsmenState extends State<Sportsmen> {
         ListView.builder(
           itemCount: sportsmen.length,
           itemBuilder: (context, index) {
-            return button(context, index);
+            return button(context, index, index == sportsmen.length - 1);
           },
         ),
       ]),
 
+      // extendBody: true,
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         child: Row(
           children: [
             Expanded(
@@ -241,7 +269,6 @@ class _SportsmenState extends State<Sportsmen> {
                 });;
               },
             ),
-
           ],
         ),
       ),

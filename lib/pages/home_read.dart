@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
 import 'package:flutter/services.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class HomeRead extends StatefulWidget {
   const HomeRead({super.key});
@@ -78,7 +79,7 @@ class _HomeReadState extends State<HomeRead> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded (
+              Expanded(
                 child: Padding(
                     padding: EdgeInsets.only(left: 20),
                     child: Column(
@@ -87,7 +88,7 @@ class _HomeReadState extends State<HomeRead> {
                         Text(
                           current_notes[index].split('_')[0],
                           style: TextStyle(color: Colors.black, fontSize: 16),
-                          maxLines: 4,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
@@ -99,32 +100,34 @@ class _HomeReadState extends State<HomeRead> {
                 ),
               ),
 
-              Row(
-                children: [
-                  Text(
-                    '${current_notes[index].split('_')[4]}',
-                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    ' + ',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                  Text(
-                    '${current_notes[index].split('_')[5]}',
-                    style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    ' = ',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                  Text(
-                    '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
 
-                  SizedBox(width: 32,)
-                ],
-              )
+              Padding(
+                padding: EdgeInsets.only(left: 20, right: 20),
+                child: Row(
+                  children: [
+                    Text(
+                      '${current_notes[index].split('_')[4]}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      ' + ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
+                      '${current_notes[index].split('_')[5]}',
+                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      ' = ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
+                      '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
             ]
           )
       ),
@@ -133,94 +136,113 @@ class _HomeReadState extends State<HomeRead> {
 
   @override
   Widget build(BuildContext context) {
+    final token = sl<Data>().token.split(':');
+    final userName = '${token[1]} ${token[0]}';
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(73),
-        child: Container(
-          decoration: const BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, 0.2),
-                spreadRadius: 2,
-                blurRadius: 2,
-                offset: Offset(0, 1),
-              ),
-            ],
+      body: Stack(
+        children: [
+          Center(
+            child: Opacity(
+              opacity: .2,
+              child: Image.asset('assets/arch.jpg', width: 300, height: 300),
+            ),
           ),
 
-          child: AppBar(
-            elevation: 0,
-            backgroundColor: const Color(0xFFf98948),
-            centerTitle: true,
-
-            title: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 16),
-
-                Text(
-                  '${sl<Data>().token.split(':')[0]} ${sl<Data>().token.split(':')[1]}',
-                  style: const TextStyle(color: Colors.black, fontSize: 16),
-                ),
-
-                // const SizedBox(height: 2),
-
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    isDense: true,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+          NestedScrollView(
+            headerSliverBuilder: (_, __) => [
+              SliverAppBar(
+                backgroundColor: Color(0xFFf98948),
+                toolbarHeight: 56,
+                pinned: true,
+                elevation: 4,
+                centerTitle: true,
+                title: DropdownButtonHideUnderline(
+                  child: DropdownButton2<String>(
                     value: selectedFilterDistance,
-                    dropdownColor: Colors.white,
-                    style: const TextStyle(color: Colors.black, fontSize: 20),
+                    iconStyleData:
+                    IconStyleData(iconEnabledColor: Colors.black),
+                    style: TextStyle(color: Colors.black, fontSize: 20),
                     items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м',
                       '60м', '70м', '80м', '90м'].map((d) => DropdownMenuItem(
                       value: d,
-                      child: Text(d == 'Все дистанции' ? d : 'Дистанция: $d'),
+                      child: d == 'Все дистанции' ? Text(d) : Text('Дистанция: $d'),
                     )).toList(),
-                    onChanged: (v) {
-                      setState(() {
-                        selectedFilterDistance = v!;
-                        current_notes = selectedFilterDistance == 'Все дистанции' ? List.from(notes) : notes.where((n) =>
-                        '$selectedFilterDistance  ' == n.split('_')[1]).toList();
-                        selectedDistance = selectedFilterDistance == 'Все дистанции' ? '' : 'Дистанция: $selectedFilterDistance';
-                      });
-                    },
+                    dropdownStyleData: DropdownStyleData(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                    ),
+                    onChanged: (v) => setState(() {
+                      selectedFilterDistance = v!;
+
+                      current_notes = [];
+                      if (selectedFilterDistance != 'Все дистанции') {
+                        for (int i = 0; i < notes.length; ++i) {
+                          if ('$selectedFilterDistance  ' == notes[i].split('_')[1]) {
+                            current_notes.add(notes[i]);
+                          }
+                        }
+                        selectedDistance = 'Дистанция: $selectedFilterDistance';
+                      } else {
+                        for (int i = 0; i < notes.length; ++i) {
+                          current_notes.add(notes[i]);
+                        }
+                      }
+                    }),
                   ),
                 ),
-              ],
+              ),
+
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _NameBanner(userName),
+              ),
+            ],
+
+            body: ListView.builder(
+              padding: EdgeInsets.symmetric(vertical: 6),
+              itemCount: current_notes.length,
+              itemBuilder: (c, i) => button(c, i),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NameBanner extends SliverPersistentHeaderDelegate {
+  final String name;
+  _NameBanner(this.name);
+
+  @override
+  double get minExtent => 40;
+  @override
+  double get maxExtent => 40;
+
+  @override
+  Widget build(BuildContext context, double shrink, bool overlaps) {
+    return Material(
+      elevation: 2,
+      color: Colors.white,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          name,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF765dba),
           ),
         ),
       ),
-
-      body: Stack(children: [
-        Center(
-          child: Opacity(
-            opacity: 0.20,
-            child: Image.asset(
-              'assets/arch.jpg',
-              width: 300,
-              height: 300,
-            ),
-          ),
-        ),
-        Column(
-          children: [
-            SizedBox(height: 6),
-            Expanded(
-              child: ListView.builder(
-                itemCount: current_notes.length,
-                itemBuilder: (context, index) {
-                  return button(context, index);
-                },
-              ),
-            ),
-            SizedBox(height: 6),
-          ],
-        )
-      ]),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant _NameBanner old) => old.name != name;
 }

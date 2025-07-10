@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
 
-class WeekNotes extends StatefulWidget {
-  const WeekNotes({super.key});
+class AllNotes extends StatefulWidget {
+  const AllNotes({super.key});
 
   @override
-  State<WeekNotes> createState() => _WeekNotesState();
+  State<AllNotes> createState() => _AllNotesState();
 }
 
-class _WeekNotesState extends State<WeekNotes> {
+class _AllNotesState extends State<AllNotes> {
   var days = [
     'Понедельник',
     'Вторник',
@@ -91,42 +91,38 @@ class _WeekNotesState extends State<WeekNotes> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: EdgeInsets.only(left: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${text.split(':')[0]} ${text.split(':')[1]}',
-                    style: TextStyle(fontSize: 16)),
-                Text('${text.split('_')[1]} ${text.split('&')[1].split('_')[0]}',
-                    style: TextStyle(color: Colors.black54, fontSize: 12)),
-              ],
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(left: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${text.split(':')[1]} ${text.split(':')[0]}',
+                      style: TextStyle(fontSize: 16)),
+                  Text('${text.split('_')[1]} ${text.split('&')[1].split('_')[0]}',
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
+                    softWrap: true,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
+
           Padding(
-            padding: EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: 15),
             child: Row(
               children: [
-                Text('$last0',
-                    style: TextStyle(
-                      color: ok0 == 'true' ? Color(0xFF4c8f28) : Colors.red,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    )),
+                Text('$last0', style: TextStyle(color: ok0 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
+
                 Text(' + ', style: TextStyle(color: Colors.black, fontSize: 16)),
-                Text('$last1',
-                    style: TextStyle(
-                      color: ok1 == 'true' ? Color(0xFF4c8f28) : Colors.red,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    )),
+
+                Text('$last1', style: TextStyle(color: ok1 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
+
                 Text(' = ', style: TextStyle(color: Colors.black, fontSize: 16)),
-                Text('${int.parse(last0) + int.parse(last1)}',
-                    style: TextStyle(
-                      color: (ok0 == 'true' && ok1 == 'true') ? Color(0xFF4c8f28) : Colors.red,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    )),
+
+                Text('${int.parse(last0) + int.parse(last1)}', style: TextStyle(color: (ok0 == 'true' && ok1 == 'true') ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
               ],
             ),
           )
@@ -154,9 +150,7 @@ class _WeekNotesState extends State<WeekNotes> {
             ],
           ),
           child: AppBar(
-            title: DropdownButtonHideUnderline(
-                child: Text('Записи за месяц')
-            ),
+            title: Text('Записи за месяц'),
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
           ),
@@ -191,6 +185,7 @@ class _WeekNotesState extends State<WeekNotes> {
               Card(
                 elevation: 2,
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+
                 child: Padding(
                   padding: EdgeInsets.all(12),
                   child: Column(

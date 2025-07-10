@@ -552,7 +552,7 @@ class _TablePageState extends State<TablePage> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
-        child: Container( // extra container for custom bottom shadows
+        child: Container(
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -564,7 +564,7 @@ class _TablePageState extends State<TablePage> {
             ],
           ),
           child: AppBar(
-            title: Text(sl<Data>().current_name.substring(0, sl<Data>().current_name.indexOf('_')), style: TextStyle(fontSize: 20)),
+            title: Text(sl<Data>().current_name.split('_')[0], style: TextStyle(fontSize: 20)),
             centerTitle: true,
             backgroundColor: Color(0xFFffbf69),
             scrolledUnderElevation: 0,

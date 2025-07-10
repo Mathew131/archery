@@ -21,8 +21,7 @@ class _ProfileState extends State<Profile> {
   static const _accentGreen = Color(0xFF95d5b2);
 
   Future<void> loadData() async {
-    final token = await sl<Data>().loadToken();
-    final parts = token.split(':');
+    final parts = sl<Data>().token.split(':');
     setState(() {
       firstName = parts[0];
       lastName = parts[1];
@@ -40,6 +39,16 @@ class _ProfileState extends State<Profile> {
   void initState() {
     super.initState();
     loadData();
+  }
+
+  Widget _buildRow(IconData icon, String text, double ft) {
+    return Row(
+      children: [
+        Icon(icon, color: _appBarColor, size: 22),
+        SizedBox(width: 12),
+        Text(text, style: TextStyle(fontSize: ft, fontWeight: FontWeight.w500)),
+      ],
+    );
   }
 
   @override
@@ -60,9 +69,7 @@ class _ProfileState extends State<Profile> {
             ],
           ),
           child: AppBar(
-            title: DropdownButtonHideUnderline(
-                child: Text('Профиль')
-            ),
+            title: Text('Профиль'),
             automaticallyImplyLeading: false,
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
@@ -70,7 +77,7 @@ class _ProfileState extends State<Profile> {
         ),
       ),
       body: Center(
-        child: SingleChildScrollView (
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 18, vertical: 40),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -79,7 +86,7 @@ class _ProfileState extends State<Profile> {
                 radius: 44,
                 backgroundColor: _cardColor,
                 child: Text(
-                  firstName.isNotEmpty && lastName.isNotEmpty ? '${firstName[0]}${lastName[0]}' : '',
+                  firstName.isNotEmpty && lastName.isNotEmpty ? '${lastName[0]}${firstName[0]}' : '',
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
@@ -99,7 +106,7 @@ class _ProfileState extends State<Profile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildRow(Icons.person_outline, '$firstName $lastName', 18),
+                      _buildRow(Icons.person_outline, '$lastName $firstName', 18),
                       SizedBox(height: 16),
                       _buildRow(Icons.email_outlined, email, 16),
                       SizedBox(height: 16),
@@ -133,18 +140,6 @@ class _ProfileState extends State<Profile> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRow(IconData icon, String text, double ft) {
-    return Row(
-      children: [
-        Icon(icon, color: _appBarColor, size: 22),
-        SizedBox(width: 12),
-        Expanded(
-          child: Text(text, style: TextStyle(fontSize: ft, fontWeight: FontWeight.w500)),
-        ),
-      ],
     );
   }
 }

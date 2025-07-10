@@ -42,9 +42,9 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Widget button(BuildContext context, int index) {
+  Widget button(BuildContext context, int index, bool isLast) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 12 : 0),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orangeAccent.shade100,
@@ -78,7 +78,7 @@ class _HomeState extends State<Home> {
                           Text(
                             current_notes[index].split('_')[0],
                             style: TextStyle(color: Colors.black, fontSize: 16),
-                            maxLines: 4,
+                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
@@ -197,6 +197,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
         child: Container(
@@ -211,9 +212,11 @@ class _HomeState extends State<Home> {
             ],
           ),
           child: AppBar(
-
             title: DropdownButtonHideUnderline(
               child: DropdownButton2<String>(
+                iconStyleData: const IconStyleData(
+                  iconEnabledColor: Colors.black,
+                ),
                 value: selectedFilterDistance,
                 style: TextStyle(color: Colors.black, fontSize: 20),
                 items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '80м', '90м'].map((d) {
@@ -256,8 +259,11 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-      body: Stack(children: [
-        Padding(
+
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Padding(
           padding: EdgeInsets.only(bottom: 0),
           child: Center(
             child: Opacity(
@@ -270,16 +276,15 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 6, bottom: 6),
-          child: ListView.builder(
-            itemCount: current_notes.length,
-            itemBuilder: (context, index) {
-              return button(context, index);
-            },
-          ),
-        )
-      ]),
+        ListView.builder(
+          itemCount: current_notes.length,
+          itemBuilder: (context, index) {
+            return button(context, index, index == current_notes.length - 1);
+          },
+        ),
+        ]
+      ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color(0xFF95d5b2),
         elevation: 3,
@@ -301,6 +306,13 @@ class _HomeState extends State<Home> {
                           name_note = v;
                         });
                       },
+                      maxLength: 60,
+                      buildCounter: (
+                          BuildContext context, {
+                            required int currentLength,
+                            required int? maxLength,
+                            required bool isFocused,
+                          }) => null, // убираем надпись maxLength
                       decoration: InputDecoration(
                         hintText: 'Название',
                         hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
