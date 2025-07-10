@@ -96,7 +96,7 @@ class Data extends ChangeNotifier {
   void removeTable(String name_note) {
     tables.remove(name_note);
     FirebaseFirestore.instance.collection('tables').doc(name_note).delete();
-    save(); // может не надо
+    save();
   }
 
   void renameTable(String old_name_note, String new_name_note) {

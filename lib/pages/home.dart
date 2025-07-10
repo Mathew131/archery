@@ -14,6 +14,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<String> notes = [];
   List<String> current_notes = [];
+  List<TextEditingController> name_current_controller = [];
   String name_note = 'Новая запись';
   String selectedDistance = 'Дистанция: 18м';
   String selectedFilterDistance = 'Все дистанции';
@@ -26,6 +27,7 @@ class _HomeState extends State<Home> {
       setState(() {
         notes = sl<Data>().getNotes();
         current_notes = sl<Data>().getNotes();
+        name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
       });
     });
   }
@@ -62,9 +64,9 @@ class _HomeState extends State<Home> {
             setState(() {
               notes = sl<Data>().getNotes();
               current_notes = sl<Data>().getNotes();
+              name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
             });
           },
-
 
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,6 +125,7 @@ class _HomeState extends State<Home> {
                               sl<Data>().removeTable(current_notes[index]);
                               notes.remove(current_notes[index]);
                               current_notes.removeAt(index);
+                              name_current_controller.removeAt(index);
                             });
                           } else if (value == 'rename') {
                             showDialog(
@@ -136,11 +139,19 @@ class _HomeState extends State<Home> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       TextField(
+                                        controller: name_current_controller[index],
                                         onChanged: (v) {
                                           setStateDialog(() {
                                             name_note = v;
                                           });
                                         },
+                                        maxLength: 60,
+                                        buildCounter: (
+                                            BuildContext context, {
+                                              required int currentLength,
+                                              required int? maxLength,
+                                              required bool isFocused,
+                                            }) => null, // убираем надпись maxLength
                                         decoration: InputDecoration(
                                           hintText: 'Название',
                                           hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
@@ -151,8 +162,7 @@ class _HomeState extends State<Home> {
                                         child: ElevatedButton(
                                           onPressed: () {
                                             setState(() {
-                                              var now = DateTime.now();
-                                              name_note = '${name_note}_${current_notes[index].split('_')[1]}_${current_notes[index].split('_')[2]}_${now.millisecondsSinceEpoch}';
+                                              name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
 
                                               sl<Data>().renameTable(current_notes[index], name_note);
 
@@ -163,6 +173,7 @@ class _HomeState extends State<Home> {
                                                 }
                                               }
                                               current_notes[index] = name_note;
+                                              name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
 
                                               name_note = 'Новая запись';
                                               selectedDistance = 'Дистанция: 18м';
@@ -237,16 +248,19 @@ class _HomeState extends State<Home> {
                     selectedFilterDistance = v!;
 
                     current_notes = [];
+                    name_current_controller = [];
                     if (selectedFilterDistance != 'Все дистанции') {
                       for (int i = 0; i < notes.length; ++i) {
                         if ('$selectedFilterDistance  ' == notes[i].split('_')[1]) {
                           current_notes.add(notes[i]);
+                          name_current_controller.add(TextEditingController(text:notes[i].split('_')[0]));
                         }
                       }
                       selectedDistance = 'Дистанция: $selectedFilterDistance';
                     } else {
                       for (int i = 0; i < notes.length; ++i) {
                         current_notes.add(notes[i]);
+                        name_current_controller.add(TextEditingController(text:notes[i].split('_')[0]));
                       }
                     }
                   });
@@ -350,6 +364,7 @@ class _HomeState extends State<Home> {
                             name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}_0_0_false_false';
                             notes.insert(0, name_note);
                             current_notes.insert(0, name_note);
+                            name_current_controller.insert(0, TextEditingController(text: name_note.split('_')[0]));
 
                             sl<Data>().createTable(name_note);
                             name_note = 'Новая запись';
