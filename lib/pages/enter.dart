@@ -86,23 +86,18 @@ class _EnterState extends State<Enter> {
                           email: emailController.text,
                           password: passwordController.text,
                         );
-
                         final user = result.user;
 
-                        if (user != null && user.emailVerified) {
+                        if (user != null) { // user.emailVerified
                           await sl<Data>().searchAndSaveTokenByEmail(emailController.text);
                           await Navigator.pushNamed(context, '/');
                         }
                       } on FirebaseAuthException catch (e) {
                         String msg = 'Ошибка входа';
 
-                        if (e.code == 'user-not-found') msg = 'Пользователь не найден';
-                        if (e.code == 'wrong-password') msg = 'Неверный пароль';
-                        if (e.code == 'invalid-email') msg = 'Неверный email';
-
+                        if (e.code == 'invalid-credential') msg = 'Неверный email или пароль';
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                       }
-
                     },
                     child: Text('Войти'),
                   ),

@@ -64,7 +64,7 @@ class _ProfileState extends State<Profile> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
-        child: Container( // extra container for custom bottom shadows
+        child: Container(
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(

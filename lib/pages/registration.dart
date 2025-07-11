@@ -19,6 +19,7 @@ class _RegisterState extends State<Register> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   late String type = '';
+  bool highlightButton = false;
 
   // Future<void> load_data() async {
   //   final loggedIn = await sl<Data>().isLoggedIn();
@@ -104,6 +105,7 @@ class _RegisterState extends State<Register> {
                     keyboardType: TextInputType.emailAddress,
                     validator: MultiValidator([
                       EmailValidator(errorText: 'Введите корректную электронную почту'),
+                      MinLengthValidator(1, errorText: 'Введите корректную электронную почту'),
                     ]),
                   ),
                 ),
@@ -142,6 +144,7 @@ class _RegisterState extends State<Register> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: type == 'sportsman' ? Color(0xFF95d5b2) : null,
                             foregroundColor: type == 'sportsman' ? Colors.white : Colors.black,
+                            side: highlightButton ? BorderSide(color: Colors.red, width: 2) : BorderSide.none,
                           ),
                         ),
                       ),
@@ -160,6 +163,7 @@ class _RegisterState extends State<Register> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: type == 'coach' ? Color(0xFF95d5b2) : null,
                             foregroundColor: type == 'coach' ? Colors.white : Colors.black,
+                            side: highlightButton ? BorderSide(color: Colors.red, width: 2) : BorderSide.none,
                           ),
                         ),
                       ),
@@ -181,7 +185,17 @@ class _RegisterState extends State<Register> {
                       ),
                     ),
                     onPressed: () async {
-                      if (_formKey.currentState!.validate() && type != '') {
+                      bool check = _formKey.currentState!.validate();
+
+                      if (type == '') {
+                        setState(() => highlightButton = true);
+                        Future.delayed(Duration(milliseconds: 500), () {
+                          setState(() => highlightButton = false);
+                        });
+                        return;
+                      }
+
+                      if (check) {
                         try {
                           final auth = FirebaseAuth.instance;
 
@@ -190,89 +204,95 @@ class _RegisterState extends State<Register> {
                             password: passwordController.text,
                           );
 
-                          await auth.currentUser?.sendEmailVerification();
-
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (_) => AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              // title: const Text(
-                              //   'Письмо отправлено',
-                              //   style: TextStyle(fontWeight: FontWeight.w600),
-                              // ),
-                              content: Text(
-                                'Письмо с подтверждением отправлено на \n${emailController.text}',
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              actionsPadding: EdgeInsets.only(bottom: 12, right: 12),
-                              actions: [
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      TextButton(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Color(0xFF95d5b2),
-                                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                        ),
-                                        onPressed: () async {
-                                          final user = auth.currentUser;
-                                          await user?.reload();
-
-                                          await user?.delete();
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Вернуться к регистрации', style: TextStyle(fontSize: 16)),
-                                      ),
-                                      SizedBox(height: 12,),
-
-                                      TextButton(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Color(0xFF95d5b2),
-                                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                        ),
-                                        onPressed: () async {
-                                          final user = auth.currentUser;
-                                          await user?.reload();
-
-                                          if (user?.emailVerified ?? false) {
-                                            await sl<Data>().saveToken(
-                                              firstNameController.text,
-                                              lastNameController.text,
-                                              emailController.text,
-                                              type,
-                                            );
-                                            await Navigator.pushNamed(context, '/');
-                                          }
-                                        },
-                                        child: Text('Я подтвердил(a)', style: TextStyle(fontSize: 16)),
-                                      ),
-                                    ],
-                                  ),
-                                )
-
-                              ],
-                            ),
+                          // без подтверждения
+                          await sl<Data>().saveToken(
+                            firstNameController.text,
+                            lastNameController.text,
+                            emailController.text,
+                            type,
                           );
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == 'email-already-in-use') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Эта почта уже зарегистрированна')),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Ошибка: $e')),
-                            );
-                          }
+
+                          FocusScope.of(context).unfocus();
+                          await Navigator.pushNamed(context, '/');
+                          //
+
+                          // с подтверждением
+                          // await auth.currentUser?.sendEmailVerification();
+                          // showDialog(
+                          //   context: context,
+                          //   barrierDismissible: false,
+                          //   builder: (_) => AlertDialog(
+                          //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          //     // title: const Text(
+                          //     //   'Письмо отправлено',
+                          //     //   style: TextStyle(fontWeight: FontWeight.w600),
+                          //     // ),
+                          //     content: Text(
+                          //       'Письмо с подтверждением отправлено на \n${emailController.text}',
+                          //       style: TextStyle(fontSize: 15),
+                          //     ),
+                          //     actionsPadding: EdgeInsets.only(bottom: 12, right: 12),
+                          //     actions: [
+                          //       Center(
+                          //         child: Column(
+                          //           mainAxisAlignment: MainAxisAlignment.start,
+                          //           children: [
+                          //             TextButton(
+                          //               style: TextButton.styleFrom(
+                          //                 foregroundColor: Colors.white,
+                          //                 backgroundColor: Color(0xFF95d5b2),
+                          //                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          //                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          //               ),
+                          //               onPressed: () async {
+                          //                 final user = auth.currentUser;
+                          //                 await user?.reload();
+                          //
+                          //                 await user?.delete();
+                          //                 Navigator.of(context).pop();
+                          //               },
+                          //               child: Text('Вернуться к регистрации', style: TextStyle(fontSize: 16)),
+                          //             ),
+                          //             SizedBox(height: 12,),
+                          //
+                          //             TextButton(
+                          //               style: TextButton.styleFrom(
+                          //                 foregroundColor: Colors.white,
+                          //                 backgroundColor: Color(0xFF95d5b2),
+                          //                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          //                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          //               ),
+                          //               onPressed: () async {
+                          //                 final user = auth.currentUser;
+                          //                 await user?.reload();
+                          //
+                          //                 if (user?.emailVerified ?? false) {
+                          //                   await sl<Data>().saveToken(
+                          //                     firstNameController.text,
+                          //                     lastNameController.text,
+                          //                     emailController.text,
+                          //                     type,
+                          //                   );
+                          //                   await Navigator.pushNamed(context, '/');
+                          //                 }
+                          //               },
+                          //               child: Text('Я подтвердил(a)', style: TextStyle(fontSize: 16)),
+                          //             ),
+                          //           ],
+                          //         ),
+                          //       )
+                          //
+                          //     ],
+                          //   ),
+                          // );
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Ошибка: $e')),
-                          );
+                          String msg = 'Ошибка регистрации';
+
+                          if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
+                            msg = 'Эта почта уже зарегистрирована';
+                          }
+
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                         }
                       }
                     },
@@ -307,9 +327,6 @@ class _RegisterState extends State<Register> {
                     )
                   ],
                 )
-
-
-
               ],
             ),
           ),

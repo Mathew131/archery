@@ -17,6 +17,7 @@ class Data extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     token = '$name:$lastname:$email:$type';
     await prefs.setString(tokenKey, '$name:$lastname:$email:$type');
+    load();
   }
 
   Future<void> searchAndSaveTokenByEmail(String email) async {
