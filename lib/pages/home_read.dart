@@ -102,7 +102,7 @@ class _HomeReadState extends State<HomeRead> {
 
 
               Padding(
-                padding: EdgeInsets.only(left: 20, right: 20),
+                padding: EdgeInsets.only(left: 10, right: 20),
                 child: Row(
                   children: [
                     Text(
@@ -153,6 +153,7 @@ class _HomeReadState extends State<HomeRead> {
           NestedScrollView(
             headerSliverBuilder: (_, __) => [
               SliverAppBar(
+                // surfaceTintColor: Colors.transparent,
                 backgroundColor: Color(0xFFf98948),
                 toolbarHeight: 56,
                 pinned: true,

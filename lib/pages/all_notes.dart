@@ -20,7 +20,7 @@ class _AllNotesState extends State<AllNotes> {
     'Воскресенье',
   ];
 
-  late List<List<String>> itemsByDay;
+  late List<List<String>> notesByDay;
   late List<String> cur_sportsmen;
 
   List<String> items = [];
@@ -51,8 +51,8 @@ class _AllNotesState extends State<AllNotes> {
     }
     days = temp;
 
-    itemsByDay = List.generate(7 * cnt_week, (_) => []);
-    await sl<Data>().searchNotes(7 * cnt_week, cur_sportsmen, itemsByDay);
+    notesByDay = List.generate(7 * cnt_week, (_) => []);
+    await sl<Data>().searchNotes(7 * cnt_week, cur_sportsmen, notesByDay);
     if (mounted) {
       setState(() {});
     }
@@ -111,7 +111,7 @@ class _AllNotesState extends State<AllNotes> {
           ),
 
           Padding(
-            padding: EdgeInsets.only(right: 15),
+            padding: EdgeInsets.only(left: 10, right: 15),
             child: Row(
               children: [
                 Text('$last0', style: TextStyle(color: ok0 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
@@ -150,6 +150,7 @@ class _AllNotesState extends State<AllNotes> {
             ],
           ),
           child: AppBar(
+            // surfaceTintColor: Colors.transparent,
             title: Text('Записи за месяц'),
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
@@ -161,7 +162,9 @@ class _AllNotesState extends State<AllNotes> {
         itemCount: days.length,
         itemBuilder: (context, index) {
           final day = days[index];
-          final buttons = itemsByDay[index];
+          final buttons = notesByDay[index];
+          buttons.sort((a, b) => (int.parse(b.split('&')[1].split('_')[4])+int.parse(b.split('&')[1].split('_')[5]))
+              .compareTo(int.parse(a.split('&')[1].split('_')[4]) + int.parse(a.split('&')[1].split('_')[5])));
 
           var now = DateTime.now();
           var cur_time = now.subtract(Duration(days: index));

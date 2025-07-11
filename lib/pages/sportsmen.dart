@@ -18,10 +18,10 @@ class _SportsmenState extends State<Sportsmen> {
 
   @override
   void initState() {
+    super.initState();
     setState(() {
       sportsmen = sl<Data>().getSportsmen();
     });
-    super.initState();
   }
 
 
@@ -54,7 +54,7 @@ class _SportsmenState extends State<Sportsmen> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(left: 16, right: 4),
-                    child: Text('${index+1})', style: TextStyle(fontSize: 16, color: Colors.black),), // color: Colors.black,
+                    child: Text('${index+1})', style: TextStyle(fontSize: 16, color: Colors.black),),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 4, right: 4),
@@ -73,9 +73,9 @@ class _SportsmenState extends State<Sportsmen> {
                   height: 32,
                   child: PopupMenuButton<String>(
                     icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
-                    onSelected: (value) {
+                    onSelected: (value) async {
+                      await sl<Data>().removeSportsman(sportsmen[index]);
                       setState(() {
-                        sl<Data>().deleteSportsman(sportsmen[index]);
                         sportsmen.removeAt(index);
                       });
                     },
@@ -110,6 +110,7 @@ class _SportsmenState extends State<Sportsmen> {
             ],
           ),
           child: AppBar(
+            // surfaceTintColor: Colors.transparent,
             title: DropdownButtonHideUnderline(
               child: Text('Мои спортсмены')
             ),
@@ -197,20 +198,6 @@ class _SportsmenState extends State<Sportsmen> {
                           TextField(
                             onChanged: (v) {
                               setStateDialog(() {
-                                name = v;
-                                if (surname == '' && name == '') notFind = false;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Имя',
-                              hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
-                            ),
-                          ),
-                          SizedBox(height: 16),
-
-                          TextField(
-                            onChanged: (v) {
-                              setStateDialog(() {
                                 surname = v;
 
                                 if (surname == '' && name == '') notFind = false;
@@ -222,11 +209,33 @@ class _SportsmenState extends State<Sportsmen> {
                             ),
                           ),
 
-                          SizedBox(height: 24),
+                          SizedBox(height: 12),
+
+                          TextField(
+                            onChanged: (v) {
+                              setStateDialog(() {
+                                name = v;
+                                if (surname == '' && name == '') notFind = false;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Имя',
+                              hintStyle: TextStyle(fontSize: 21, color: Colors.grey),
+                            ),
+                          ),
+
+                          SizedBox(height: 16),
+
+                          Text('* Спортсмен должен быть зарегистрирован в приложении', style: TextStyle(fontSize: 11, color: Colors.black38)),
+
+                          SizedBox(height: 12),
                           Center(
                             child: ElevatedButton(
                               onPressed: () async {
                                 String token_s = await sl<Data>().search_sportsman(name, surname);
+                                if (token_s != '') {
+                                  await sl<Data>().addSportsman(token_s);
+                                }
 
                                 setStateDialog(() {
                                   if (token_s == '') {
@@ -236,7 +245,6 @@ class _SportsmenState extends State<Sportsmen> {
                                     // спортсмен найдет и есть его токен
                                     notFind = false;
                                     setState(() {
-                                      sl<Data>().addSportsman(token_s);
                                       sportsmen = sl<Data>().getSportsmen();
                                     });
                                     Navigator.of(ctx).pop();

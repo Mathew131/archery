@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -15,6 +18,8 @@ class _ProfileState extends State<Profile> {
   String lastName = '';
   String email = '';
   String type = '';
+  List<String> coaches = [];
+  int maxCoachesToSee = 5;
 
   static const _appBarColor = Color(0xFFFF8C3A);
   static const _cardColor = Color(0xFFFFECB3);
@@ -22,11 +27,13 @@ class _ProfileState extends State<Profile> {
 
   Future<void> loadData() async {
     final parts = sl<Data>().token.split(':');
+
     setState(() {
       firstName = parts[0];
       lastName = parts[1];
       email = parts[2];
       type = parts[3];
+      coaches = sl<Data>().getCoaches();
     });
   }
 
@@ -76,70 +83,116 @@ class _ProfileState extends State<Profile> {
           ),
         ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 40),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 44,
-                backgroundColor: _cardColor,
-                child: Text(
-                  firstName.isNotEmpty && lastName.isNotEmpty ? '${lastName[0]}${firstName[0]}' : '',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                    color: _appBarColor,
-                  ),
-                ),
-              ),
-              SizedBox(height: 24),
-              Card(
-                color: _cardColor,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(18, 28, 12, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRow(Icons.person_outline, '$lastName $firstName', 18),
-                      SizedBox(height: 16),
-                      _buildRow(Icons.email_outlined, email, 16),
-                      SizedBox(height: 16),
-                      _buildRow(Icons.flag_outlined, type == 'coach' ? 'Тренер' : 'Спортсмен', 18),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 36),
-              SizedBox(
-                width: 180,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    logout(context);
-                  },
-                  icon: Icon(Icons.logout_rounded),
-                  label: Text('Выйти'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accentGreen,
-                    foregroundColor: Colors.white,
-                    elevation: 2,
-                    textStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 18, right: 18, top: max(70 - 6.0 * maxCoachesToSee, 70 - 6.0 * coaches.length)),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 44,
+                  backgroundColor: _cardColor,
+                  child: Text(
+                    firstName.isNotEmpty && lastName.isNotEmpty ? '${lastName[0]}${firstName[0]}' : '',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      color: _appBarColor,
                     ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 24),
+                Card(
+                  color: _cardColor,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(18, 28, 12, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRow(Icons.person_outline, '$lastName $firstName', 18),
+                        SizedBox(height: 16),
+                        _buildRow(Icons.email_outlined, email, 16),
+                        SizedBox(height: 16),
+                        _buildRow(Icons.flag_outlined, type == 'coach' ? 'Тренер' : 'Спортсмен', 18),
+                        if (type == 'sportsman') ... [
+                          SizedBox(height: 16),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.sports, color: _appBarColor, size: 22),
+                              SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (int i = 0; i < min(coaches.length, maxCoachesToSee); ++i) ... [
+                                    Text('${coaches[i].split(':')[0]} ${coaches[i].split(':')[1]}${i == maxCoachesToSee - 1 && coaches.length > maxCoachesToSee? ' ...' : ''}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                  ],
+                                  if (coaches.length == 0) ... [
+                                    Text('-', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                  ]
+                                ],
+                              )
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 36),
+                SizedBox(
+                  width: 180,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      logout(context);
+                    },
+                    icon: Icon(Icons.logout_rounded),
+                    label: Text('Выйти'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accentGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 2,
+                      textStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+
+          Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 18, right: 18),
+                child: Text('По вопросам сотрудничества писать на почту:',
+                  style: TextStyle(fontSize: 12, color: Colors.black38),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 20, left: 18, right: 18),
+                child: GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: 'archery.team131@gmail.com'));
+                  },
+                  child: Text(
+                    'archery.team131@gmail.com',
+                    style: TextStyle(fontSize: 12, color: Colors.blue),
+                  ),
+                )
+              )
+            ],
+          )
+        ],
+      )
     );
   }
 }

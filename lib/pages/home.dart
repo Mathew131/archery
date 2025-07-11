@@ -92,32 +92,32 @@ class _HomeState extends State<Home> {
                   ),
                 ),
 
-                Row(
-                  children: [
-                    Text(
-                      '${current_notes[index].split('_')[4]}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      ' + ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    Text(
-                      '${current_notes[index].split('_')[5]}',
-                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      ' = ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    Text(
-                      '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                Padding(
+                  padding: EdgeInsets.only(left: 10, right: 0),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${current_notes[index].split('_')[4]}',
+                        style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        ' + ',
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                      Text(
+                        '${current_notes[index].split('_')[5]}',
+                        style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        ' = ',
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                      Text(
+                        '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                        style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
 
-                    Padding(
-                      padding: EdgeInsets.only(right: 0),
-                      child: PopupMenuButton<String>(
+                      PopupMenuButton<String>(
                         icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
                         onSelected: (value) {
                           if (value == 'delete') {
@@ -195,8 +195,8 @@ class _HomeState extends State<Home> {
                           PopupMenuItem(value: 'delete', child: Text('Удалить')),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 )
               ]
           )
@@ -223,6 +223,7 @@ class _HomeState extends State<Home> {
             ],
           ),
           child: AppBar(
+            // surfaceTintColor: Colors.transparent,
             title: DropdownButtonHideUnderline(
               child: DropdownButton2<String>(
                 iconStyleData: const IconStyleData(

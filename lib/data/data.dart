@@ -8,6 +8,7 @@ class Data extends ChangeNotifier {
   late String token;
   Map<String, List<List<List<int>>>> tables = {};
   List<String> sportsmen = [];
+  List<String> coaches = [];
   String current_name = '';
   late int cnt_ser;
   late int cnt_shoot;
@@ -60,14 +61,25 @@ class Data extends ChangeNotifier {
 
   // ------------------------------------------------------
 
-  void addSportsman(String token_s) {
-    sportsmen.add(token_s);
-    save();
+  Future<void> addSportsman(String token_s) async {
+    if (!sportsmen.contains(token_s)) {
+      sportsmen.add(token_s);
+    }
+
+    await FirebaseFirestore.instance.collection(token_s).doc('coaches').set({'data': FieldValue.arrayUnion([token])}, SetOptions(merge: true));
+
+    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen': FieldValue.arrayUnion([token_s])}, SetOptions(merge: true));
   }
 
-  void deleteSportsman(String token_s) {
+  Future<void> removeSportsman(String token_s) async {
     sportsmen.remove(token_s);
-    save();
+    await FirebaseFirestore.instance.collection(token_s).doc('coaches').set({'data': FieldValue.arrayRemove([token])}, SetOptions(merge: true));
+
+    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen': FieldValue.arrayRemove([token_s])}, SetOptions(merge: true));
+  }
+
+  List<String> getCoaches() {
+    return List.from(coaches);
   }
 
   List<String> getSportsmen() {
@@ -205,18 +217,20 @@ class Data extends ChangeNotifier {
       await FirebaseFirestore.instance.collection('users').doc('coach_en').update({emailKey : '${token.split(':')[0]}:${token.split(':')[1]}:${token.split(':')[3]}'});
       await FirebaseFirestore.instance.collection('users').doc('coach_ne').update({'${token.split(':')[0]}:${token.split(':')[1]}' : emailKey});
 
-      await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen' : sportsmen});
+      // await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen' : sportsmen});
     }
   }
 
   Future<void> load() async {
     tables.clear();
     sportsmen.clear();
+    coaches.clear();
 
     final tablesFuture = FirebaseFirestore.instance.collection(token).doc('tables').get();
     final sportsmenFuture = FirebaseFirestore.instance.collection(token).doc('sportsmen').get();
+    final coachesFuture = FirebaseFirestore.instance.collection(token).doc('coaches').get();
 
-    final results = await Future.wait([tablesFuture, sportsmenFuture]);
+    final results = await Future.wait([tablesFuture, sportsmenFuture, coachesFuture]);
 
     final tablesSnapshot = results[0];
 
@@ -239,6 +253,9 @@ class Data extends ChangeNotifier {
     final sportsmenSnapshot = results[1];
     sportsmen = (sportsmenSnapshot.data()?['sportsmen'] as List?)?.cast<String>() ?? [];
 
+    final coachesSnapshot = results[2];
+    coaches = (coachesSnapshot.data()?['data'] as List?)?.cast<String>() ?? [];
+    // print('$coaches ++++++++++++++++++++++++++++++++++++++++++++');
   }
 
   Future<String> search_sportsman(String name, String surname) async {
