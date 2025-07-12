@@ -205,7 +205,7 @@ class _RegisterState extends State<Register> {
                           );
 
                           // без подтверждения
-                          await sl<Data>().saveToken(
+                          await sl<Data>().firstSaveToken(
                             firstNameController.text,
                             lastNameController.text,
                             emailController.text,

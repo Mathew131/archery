@@ -13,35 +13,44 @@ class Data extends ChangeNotifier {
   late int cnt_ser;
   late int cnt_shoot;
 
-  Future<void> saveToken(String name, String lastname, String email, String type) async {
+  // вызывается только в registration, когда мы первый раз заходим
+  Future<void> firstSaveToken(String name, String lastname, String email, String type) async {
     final prefs = await SharedPreferences.getInstance();
     token = '$name:$lastname:$email:$type';
     await prefs.setString(tokenKey, '$name:$lastname:$email:$type');
-    await load();
+
+    // иначе загрузятся данные предыдущего пользователя
+    tables.clear();
+    sportsmen.clear();
+    coaches.clear();
+    await save();
+  }
+
+  Future<void> saveToken(String name, String surname, String email, String type) async {
+    final prefs = await SharedPreferences.getInstance();
+    token = '$name:$surname:$email:$type';
+    await prefs.setString(tokenKey, token);
   }
 
   Future<void> searchAndSaveTokenByEmail(String email) async {
     var coachData = FirebaseFirestore.instance.collection('users').doc('coach_en').get();
     var sportsmenData = FirebaseFirestore.instance.collection('users').doc('sportsmen_en').get();
     var results = await Future.wait([coachData, sportsmenData]);
-    var coachSnapshot = results[0];
-
-    var data = coachSnapshot.data() ?? {};
-
     String emailKey = email.replaceAll('.', ',');
-    String? token_no_email = data?['$emailKey'];
-    if (token_no_email != null) {
-      saveToken(token_no_email.split(':')[0], token_no_email.split(':')[1], email, 'coach');
+
+    var coachSnapshot = results[0];
+    var data_c = coachSnapshot.data() ?? {};
+    String? name_surname_c = data_c?['$emailKey'];
+    if (name_surname_c != null) {
+      saveToken(name_surname_c.split(':')[0], name_surname_c.split(':')[1], email, 'coach');
     }
 
+
     var sportsmenSnapshot = results[1];
-
-    data = sportsmenSnapshot.data() ?? {};
-
-    emailKey = email.replaceAll('.', ',');
-    token_no_email = data?['$emailKey'];
-    if (token_no_email != null) {
-      saveToken(token_no_email.split(':')[0], token_no_email.split(':')[1], email, 'sportsman');
+    var data_s = sportsmenSnapshot.data() ?? {};
+    String? name_surname_s = data_s?['$emailKey'];
+    if (name_surname_s != null) {
+      saveToken(name_surname_s.split(':')[0], name_surname_s.split(':')[1], email, 'sportsman');
     }
   }
 
@@ -60,23 +69,22 @@ class Data extends ChangeNotifier {
     return token.isNotEmpty;
   }
 
-  // ------------------------------------------------------
+  // sportsmen and coaches ------------------------------------------------------
 
   Future<void> addSportsman(String token_s) async {
     if (!sportsmen.contains(token_s)) {
       sportsmen.add(token_s);
     }
-
     await FirebaseFirestore.instance.collection(token_s).doc('coaches').set({'data': FieldValue.arrayUnion([token])}, SetOptions(merge: true));
 
-    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen': FieldValue.arrayUnion([token_s])}, SetOptions(merge: true));
+    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'data': FieldValue.arrayUnion([token_s])}, SetOptions(merge: true));
   }
 
   Future<void> removeSportsman(String token_s) async {
     sportsmen.remove(token_s);
     await FirebaseFirestore.instance.collection(token_s).doc('coaches').set({'data': FieldValue.arrayRemove([token])}, SetOptions(merge: true));
 
-    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen': FieldValue.arrayRemove([token_s])}, SetOptions(merge: true));
+    await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'data': FieldValue.arrayRemove([token_s])}, SetOptions(merge: true));
   }
 
   List<String> getCoaches() {
@@ -134,19 +142,16 @@ class Data extends ChangeNotifier {
     }
 
     tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
-    // print('$name_note ++++++++++++++++++++++++++++++++++++');
     notifyListeners();
 
     save();
   }
 
   List<List<List<int>>> getTable(String name_note) {
-    // print('$name_note ---------------------------------------- ${tables.keys}');
     return tables[name_note]!;
   }
 
   void updateTable(String name_note, List<List<List<int>>> table) {
-    // print('$name_note ^^^^^^^^^^^^^^^^^^^^^^^^^');
     tables[name_note] = table;
     notifyListeners();
 
@@ -158,6 +163,8 @@ class Data extends ChangeNotifier {
     keys_in_order.sort((a, b) => int.parse(b.split('_')[3]).compareTo(int.parse(a.split('_')[3])));
     return keys_in_order;
   }
+
+  // ----------------------------------
 
   int lastWriteElem(int i_table, String name) {
     for (int i = tables[name]![i_table].length-1; i >= 0; --i) {
@@ -179,85 +186,7 @@ class Data extends ChangeNotifier {
     return true;
   }
 
-  Future<void> save() async {
-    final data = <String, String>{};
-    final oldKeys = List<String>.from(tables.keys);
-
-    // print('${tables.keys} до ***********************************');
-    for (final key in oldKeys) {
-      var lw0 = lastWriteElem(0, key);
-      var lw1 = lastWriteElem(1, key);
-      var rg0 = rg(0, key);
-      var rg1 = rg(1, key);
-
-      String newKey = '${key.split('_')[0]}_${key.split('_')[1]}_${key.split('_')[2]}_${key.split('_')[3]}_${lw0}_${lw1}_${rg0}_${rg1}';
-      data[newKey] = jsonEncode(tables[key]);
-
-
-      if (key != newKey) {
-        if (key == current_name) {
-          current_name = newKey;
-        }
-        tables[newKey] = tables[key]!
-            .map((table) => table.map((row) => List<int>.from(row)).toList())
-            .toList();
-
-        tables.remove(key);
-      }
-    }
-    // print('${tables.keys} после *********************************** ${data.keys}');
-
-    await FirebaseFirestore.instance.collection(token).doc('tables').set(data);
-
-    String emailKey = token.split(':')[2].replaceAll('.', ','); // в ключе в firebase не надо точек
-    if (token.split(':')[3] == 'sportsman') {
-      // await FirebaseFirestore.instance.collection('sportsmen').doc('data').update({'${token.split(':')[0]}:${token.split(':')[1]}' : token.split(':')[2]});
-      await FirebaseFirestore.instance.collection('users').doc('sportsmen_en').update({emailKey : '${token.split(':')[0]}:${token.split(':')[1]}:${token.split(':')[3]}'});
-      await FirebaseFirestore.instance.collection('users').doc('sportsmen_ne').update({'${token.split(':')[0]}:${token.split(':')[1]}' : emailKey});
-    } else {
-      await FirebaseFirestore.instance.collection('users').doc('coach_en').update({emailKey : '${token.split(':')[0]}:${token.split(':')[1]}:${token.split(':')[3]}'});
-      await FirebaseFirestore.instance.collection('users').doc('coach_ne').update({'${token.split(':')[0]}:${token.split(':')[1]}' : emailKey});
-
-      // await FirebaseFirestore.instance.collection(token).doc('sportsmen').set({'sportsmen' : sportsmen});
-    }
-  }
-
-  Future<void> load() async {
-    tables.clear();
-    sportsmen.clear();
-    coaches.clear();
-
-    final tablesFuture = FirebaseFirestore.instance.collection(token).doc('tables').get();
-    final sportsmenFuture = FirebaseFirestore.instance.collection(token).doc('sportsmen').get();
-    final coachesFuture = FirebaseFirestore.instance.collection(token).doc('coaches').get();
-
-    final results = await Future.wait([tablesFuture, sportsmenFuture, coachesFuture]);
-
-    final tablesSnapshot = results[0];
-
-    final data = tablesSnapshot.data() ?? {};
-
-    for (final key in data.keys) {
-      final encoded = data[key] as String;
-
-      final decoded = jsonDecode(encoded);
-
-      final table = (decoded as List)
-          .map((list1) => (list1 as List)
-          .map((list2) => (list2 as List).map((v) => v as int).toList())
-          .toList())
-          .toList();
-
-      tables[key] = table;
-    }
-
-    final sportsmenSnapshot = results[1];
-    sportsmen = (sportsmenSnapshot.data()?['sportsmen'] as List?)?.cast<String>() ?? [];
-
-    final coachesSnapshot = results[2];
-    coaches = (coachesSnapshot.data()?['data'] as List?)?.cast<String>() ?? [];
-    // print('$coaches ++++++++++++++++++++++++++++++++++++++++++++');
-  }
+  // ----------------------------------
 
   Future<String> search_sportsman(String name, String surname) async {
     final all_sportsmen = await FirebaseFirestore.instance.collection('users').doc('sportsmen_ne').get();
@@ -290,5 +219,84 @@ class Data extends ChangeNotifier {
         }
       }
     }));
+  }
+
+
+  // самое важное ----------------------------------------------------------------
+  Future<void> save() async {
+    final data = <String, String>{};
+    final oldKeys = List<String>.from(tables.keys);
+
+    for (final key in oldKeys) {
+      var lw0 = lastWriteElem(0, key);
+      var lw1 = lastWriteElem(1, key);
+      var rg0 = rg(0, key);
+      var rg1 = rg(1, key);
+
+      String newKey = '${key.split('_')[0]}_${key.split('_')[1]}_${key.split('_')[2]}_${key.split('_')[3]}_${lw0}_${lw1}_${rg0}_${rg1}';
+      data[newKey] = jsonEncode(tables[key]);
+
+
+      if (key != newKey) {
+        if (key == current_name) {
+          current_name = newKey;
+        }
+        tables[newKey] = tables[key]!
+            .map((table) => table.map((row) => List<int>.from(row)).toList())
+            .toList();
+
+        tables.remove(key);
+      }
+    }
+
+    await FirebaseFirestore.instance.collection(token).doc('tables').set(data);
+
+    String emailKey = token.split(':')[2].replaceAll('.', ','); // в ключе в firebase не надо точек
+    String name_surname = '${token.split(':')[0]}:${token.split(':')[1]}';
+    if (token.split(':')[3] == 'sportsman') {
+      await FirebaseFirestore.instance.collection('users').doc('sportsmen_en').update({emailKey : name_surname});
+      await FirebaseFirestore.instance.collection('users').doc('sportsmen_ne').update({name_surname : emailKey});
+    } else {
+      await FirebaseFirestore.instance.collection('users').doc('coach_en').update({emailKey : name_surname});
+      await FirebaseFirestore.instance.collection('users').doc('coach_ne').update({name_surname : emailKey});
+    }
+  }
+
+
+
+  Future<void> load() async {
+    tables.clear();
+    sportsmen.clear();
+    coaches.clear();
+
+    final tablesFuture = FirebaseFirestore.instance.collection(token).doc('tables').get();
+    final sportsmenFuture = FirebaseFirestore.instance.collection(token).doc('sportsmen').get();
+    final coachesFuture = FirebaseFirestore.instance.collection(token).doc('coaches').get();
+
+    final results = await Future.wait([tablesFuture, sportsmenFuture, coachesFuture]);
+
+    final tablesSnapshot = results[0];
+
+    final data = tablesSnapshot.data() ?? {};
+
+    for (final key in data.keys) {
+      final encoded = data[key] as String;
+
+      final decoded = jsonDecode(encoded);
+
+      final table = (decoded as List)
+          .map((list1) => (list1 as List)
+          .map((list2) => (list2 as List).map((v) => v as int).toList())
+          .toList())
+          .toList();
+
+      tables[key] = table;
+    }
+
+    final sportsmenSnapshot = results[1];
+    sportsmen = (sportsmenSnapshot.data()?['data'] as List?)?.cast<String>() ?? [];
+
+    final coachesSnapshot = results[2];
+    coaches = (coachesSnapshot.data()?['data'] as List?)?.cast<String>() ?? [];
   }
 }
