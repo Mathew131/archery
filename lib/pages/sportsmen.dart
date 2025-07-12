@@ -29,64 +29,69 @@ class _SportsmenState extends State<Sportsmen> {
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 12 : 0),
       child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orangeAccent.shade100,
-            padding: EdgeInsets.symmetric(vertical: 11),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orangeAccent.shade100,
+          padding: EdgeInsets.symmetric(vertical: 11),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+        ),
 
-          onPressed: () async {
-            String temp = sl<Data>().token;
-            await Navigator.pushNamed(context, '/home_read', arguments: sportsmen[index],);
+        onPressed: () async {
+          String temp = sl<Data>().token;
+          await Navigator.pushNamed(context, '/home_read', arguments: sportsmen[index],);
 
-            sl<Data>().token = temp;
-            await sl<Data>().load();
-            sportsmen = sl<Data>().getSportsmen();
-          },
+          sl<Data>().token = temp;
+          await sl<Data>().load();
+          sportsmen = sl<Data>().getSportsmen();
+        },
 
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+        child: Row(
+          children: [
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: EdgeInsets.only(left: 16, right: 4),
-                    child: Text('${index+1})', style: TextStyle(fontSize: 16, color: Colors.black),),
+                    child: Text('${index + 1})', style: TextStyle(fontSize: 16, color: Colors.black)),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 4, right: 4),
-                    child: Text(sportsmen[index].split(':')[1], style: TextStyle(fontSize: 16),),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4, right: 16),
+                      child: Text(
+                        '${sportsmen[index].split(':')[1]} ${sportsmen[index].split(':')[0]}',
+                        style: TextStyle(fontSize: 16),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 4, right: 16),
-                    child: Text(sportsmen[index].split(':')[0], style: TextStyle(fontSize: 16),),
-                  )
                 ],
               ),
-              Padding(
-                padding: EdgeInsets.only(right: 0),
-                child: SizedBox(
-                  width: 48,
-                  height: 32,
-                  child: PopupMenuButton<String>(
-                    icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
-                    onSelected: (value) async {
-                      await sl<Data>().removeSportsman(sportsmen[index]);
-                      setState(() {
-                        sportsmen.removeAt(index);
-                      });
-                    },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                    ],
-                  ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(right: 0),
+              child: SizedBox(
+                width: 48,
+                height: 32,
+                child: PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
+                  onSelected: (value) async {
+                    await sl<Data>().removeSportsman(sportsmen[index]);
+                    setState(() {
+                      sportsmen.removeAt(index);
+                    });
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                  ],
                 ),
-              )
-            ]
-          )
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

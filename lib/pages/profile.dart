@@ -19,7 +19,7 @@ class _ProfileState extends State<Profile> {
   String email = '';
   String type = '';
   List<String> coaches = [];
-  int maxCoachesToSee = 5;
+  int maxCoachesToSee = 4;
 
   static const _appBarColor = Color(0xFFFF8C3A);
   static const _cardColor = Color(0xFFFFECB3);
@@ -50,13 +50,22 @@ class _ProfileState extends State<Profile> {
 
   Widget _buildRow(IconData icon, String text, double ft) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(icon, color: _appBarColor, size: 22),
         SizedBox(width: 12),
-        Text(text, style: TextStyle(fontSize: ft, fontWeight: FontWeight.w500)),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: ft, fontWeight: FontWeight.w500),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +96,7 @@ class _ProfileState extends State<Profile> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 18, right: 18, top: max(70 - 6.0 * maxCoachesToSee, 70 - 6.0 * coaches.length)),
+            padding: EdgeInsets.only(left: 18, right: 18, top: max(70 - 10.0 * maxCoachesToSee, 70 - 10.0 * coaches.length)),
             child: Column(
               children: [
                 CircleAvatar(
@@ -114,11 +123,11 @@ class _ProfileState extends State<Profile> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildRow(Icons.person_outline, '$lastName $firstName', 18),
+                        _buildRow(Icons.person_outline, '$lastName $firstName', 16),
                         SizedBox(height: 16),
                         _buildRow(Icons.email_outlined, email, 16),
                         SizedBox(height: 16),
-                        _buildRow(Icons.flag_outlined, type == 'coach' ? 'Тренер' : 'Спортсмен', 18),
+                        _buildRow(Icons.flag_outlined, type == 'coach' ? 'Тренер' : 'Спортсмен', 16),
                         if (type == 'sportsman') ... [
                           SizedBox(height: 16),
                           Row(

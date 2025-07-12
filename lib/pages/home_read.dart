@@ -239,6 +239,8 @@ class _NameBanner extends SliverPersistentHeaderDelegate {
             fontWeight: FontWeight.bold,
             color: Color(0xFF765dba),
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
