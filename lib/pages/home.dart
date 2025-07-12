@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
 
   Widget button(BuildContext context, int index, bool isLast) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 12 : 0),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 90 : 0),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orangeAccent.shade100,
@@ -60,6 +60,7 @@ class _HomeState extends State<Home> {
           onPressed: () async {
             sl<Data>().current_name = current_notes[index];
             await Navigator.pushNamed(context, '/table', arguments: 'w');
+            await sl<Data>().save();
 
             setState(() {
               notes = sl<Data>().getNotes();
@@ -119,14 +120,15 @@ class _HomeState extends State<Home> {
 
                       PopupMenuButton<String>(
                         icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
-                        onSelected: (value) {
+                        onSelected: (value) async {
                           if (value == 'delete') {
+                            String temp = current_notes[index];
                             setState(() {
-                              sl<Data>().removeTable(current_notes[index]);
                               notes.remove(current_notes[index]);
                               current_notes.removeAt(index);
                               name_current_controller.removeAt(index);
                             });
+                            await sl<Data>().removeTable(temp);
                           } else if (value == 'rename') {
                             showDialog(
                               useRootNavigator: true,
@@ -160,12 +162,11 @@ class _HomeState extends State<Home> {
                                       SizedBox(height: 24),
                                       Center(
                                         child: ElevatedButton(
-                                          onPressed: () {
+                                          onPressed: () async {
+                                            name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
+                                            String temp = current_notes[index];
+
                                             setState(() {
-                                              name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
-
-                                              sl<Data>().renameTable(current_notes[index], name_note);
-
                                               for (int k = 0; k < notes.length; ++k) {
                                                 if (notes[k] == current_notes[index]) {
                                                   notes[k] = name_note;
@@ -174,10 +175,12 @@ class _HomeState extends State<Home> {
                                               }
                                               current_notes[index] = name_note;
                                               name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
-
-                                              name_note = 'Новая запись';
-                                              selectedDistance = 'Дистанция: 18м';
                                             });
+
+                                            await sl<Data>().renameTable(temp, name_note);
+
+                                            name_note = 'Новая запись';
+                                            selectedDistance = 'Дистанция: 18м';
                                             Navigator.of(ctx).pop();
                                           },
                                           child: Text('Сохранить'),
@@ -356,21 +359,21 @@ class _HomeState extends State<Home> {
                     SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            String distance = RegExp(r'\d+').firstMatch(selectedDistance ?? '')?.group(0) ?? '';
-                            var now = DateTime.now();
-                            String date = "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}";
+                        onPressed: () async {
+                          String distance = RegExp(r'\d+').firstMatch(selectedDistance ?? '')?.group(0) ?? '';
+                          var now = DateTime.now();
+                          String date = "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}";
+                          name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}_0_0_false_false';
 
-                            name_note = '${name_note}_${distance}м  _${date}_${now.millisecondsSinceEpoch}_0_0_false_false';
+                          setState(() {
                             notes.insert(0, name_note);
                             current_notes.insert(0, name_note);
                             name_current_controller.insert(0, TextEditingController(text: name_note.split('_')[0]));
-
-                            sl<Data>().createTable(name_note);
-                            name_note = 'Новая запись';
-                            selectedDistance = 'Дистанция: 18м';
                           });
+                          await sl<Data>().createTable(name_note);
+                          name_note = 'Новая запись';
+                          selectedDistance = 'Дистанция: 18м';
+
                           Navigator.of(ctx).pop();
                         },
                         child: Text('Добавить'),

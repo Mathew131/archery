@@ -38,6 +38,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> logout(BuildContext context) async {
+    sl<Data>().logout();
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, '/registration');
   }

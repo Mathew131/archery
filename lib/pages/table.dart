@@ -131,7 +131,7 @@ class _TablePageState extends State<TablePage> {
     super.dispose();
   }
 
-  void insertText(BuildContext context, String text) {
+  Future<void> insertText(BuildContext context, String text) async {
     final t = currentTable;
     final i = currentI;
     final j = currentJ;
@@ -139,7 +139,7 @@ class _TablePageState extends State<TablePage> {
     final controller = inputControllers[t][i][j];
     controller.text = text;
     controller.selection = TextSelection.collapsed(offset: text.length);
-    onValueChanged(text, t, i, j);
+    await onValueChanged(text, t, i, j);
 
     int nextI = i;
     int nextJ = j + 1;
@@ -158,15 +158,20 @@ class _TablePageState extends State<TablePage> {
     });
   }
 
-  void deleteText(BuildContext context) {
+  Future<void> deleteText(BuildContext context) async {
     final t = currentTable;
     final i = currentI;
     final j = currentJ;
 
     final controller = inputControllers[t][i][j];
+
+    String temp = controller.text;
     controller.text = '';
     controller.selection = TextSelection.collapsed(offset: ''.length);
-    onValueChanged('', t, i, j);
+    await onValueChanged('', t, i, j);
+    if (temp != '') {
+      return;
+    }
 
     int nextI = i;
     int nextJ = j - 1;
@@ -187,7 +192,7 @@ class _TablePageState extends State<TablePage> {
 
   Widget buildCustomKeyboard() {
     const labels = [
-      '1','2','3','←',
+      '1','2','3','<-',
       '4','5','6','OK',
       '7','8','9','',
       'м', '10','x','',
@@ -215,10 +220,9 @@ class _TablePageState extends State<TablePage> {
           final label = labels[idx];
           final isEmpty = label.isEmpty;
           Color outerColor = Colors.grey[350]!;
-          Color innerColor = isEmpty ? outerColor : Colors.white;
           Widget child;
 
-          if (label == '←') {
+          if (label == '<-') {
             child = const Icon(Icons.backspace_outlined, size: 24);
           } else if (label == 'OK') {
             child = const Text('OK', style: TextStyle(fontSize: 24, color: Colors.blue));
@@ -233,16 +237,17 @@ class _TablePageState extends State<TablePage> {
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               borderRadius: BorderRadius.circular(8),
-              onTap: isEmpty ? null : () {
+              onTap: isEmpty ? null : () async {
                 if (label == 'OK') {
                   setState(() {
                     Focus = false;
                     keyboardVisible = false;
                   });
-                } else if (label == '←') {
-                  deleteText(context);
+                  await sl<Data>().save();
+                } else if (label == '<-') {
+                  await deleteText(context);
                 } else {
-                  insertText(context, label);
+                  await insertText(context, label);
                 }
               },
               child: Center(child: child),
@@ -265,7 +270,7 @@ class _TablePageState extends State<TablePage> {
     return controller;
   }
 
-  void onValueChanged(String v, int table, int i, int j) {
+  Future<void> onValueChanged(String v, int table, int i, int j) async {
     late int n;
     if (v == 'м') {
       n = 0;
@@ -315,9 +320,8 @@ class _TablePageState extends State<TablePage> {
         }
 
       }
-
-      sl<Data>().updateTable(sl<Data>().current_name, val);
     });
+    // await sl<Data>().save();
   }
 
   Widget row_of_cells(int table, int i, int dop, bool isVisibleNumber, bool isVisibleCell) {
