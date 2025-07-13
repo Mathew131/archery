@@ -20,6 +20,7 @@ class _RegisterState extends State<Register> {
   final TextEditingController passwordController = TextEditingController();
   late String type = '';
   bool highlightButton = false;
+  bool _obscure = true;
 
   // Future<void> load_data() async {
   //   final loggedIn = await sl<Data>().isLoggedIn();
@@ -51,7 +52,7 @@ class _RegisterState extends State<Register> {
       body: Align(
         alignment: Alignment(0, 0),
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(16, 32, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 52, 16, 16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -115,11 +116,19 @@ class _RegisterState extends State<Register> {
                   width: 320,
                   child: TextFormField(
                     controller: passwordController,
-                    obscureText: true,
+                    obscureText: _obscure,
                     decoration: InputDecoration(
                       labelText: 'Пароль',
-                      hintText: 'Введите пароль',
+                      hintText: 'Придумайте пароль',
                       prefixIcon: Icon(Icons.lock, color: Colors.orange),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _obscure = !_obscure;
+                          });
+                        },
+                      ),
                       border: OutlineInputBorder(),
                     ),
                     validator: MinLengthValidator(8, errorText: 'Минимум 8 символов'),
@@ -213,7 +222,7 @@ class _RegisterState extends State<Register> {
                           );
 
                           FocusScope.of(context).unfocus();
-                          await Navigator.pushNamed(context, '/');
+                          await Navigator.pushReplacementNamed(context, '/');
                           //
 
                           // с подтверждением

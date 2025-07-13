@@ -20,6 +20,7 @@ class _ProfileState extends State<Profile> {
   String type = '';
   List<String> coaches = [];
   int maxCoachesToSee = 4;
+  bool copied = false;
 
   static const _appBarColor = Color(0xFFFF8C3A);
   static const _cardColor = Color(0xFFFFECB3);
@@ -190,14 +191,54 @@ class _ProfileState extends State<Profile> {
               Padding(
                 padding: EdgeInsets.only(bottom: 20, left: 18, right: 18),
                 child: GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     Clipboard.setData(ClipboardData(text: 'archery.team131@gmail.com'));
+                    setState(() => copied = true);
+                    await Future.delayed(Duration(milliseconds: 350));
+                    setState(() => copied = false);
                   },
-                  child: Text(
-                    'archery.team131@gmail.com',
-                    style: TextStyle(fontSize: 12, color: Colors.blue),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: copied ? Colors.lightBlue.shade50 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'archery.team131@gmail.com',
+                      style: TextStyle(fontSize: 12, color: Colors.blue),
+                    ),
                   ),
-                )
+
+                ),
+                // child: GestureDetector(
+                //   onTap: () {
+                //     Clipboard.setData(ClipboardData(text: 'archery.team131@gmail.com'));
+                //
+                //     // у Android часто вылезает системная всплывашка, это надо только для ios
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       SnackBar(
+                //         content: Text(
+                //           'Скопировано в буфер обмена',
+                //           textAlign: TextAlign.center,
+                //           style: TextStyle(color: Colors.white, fontSize: 16),
+                //         ),
+                //         duration: Duration(milliseconds: 4000),
+                //         backgroundColor: Colors.black54,
+                //         behavior: SnackBarBehavior.floating,
+                //         margin: EdgeInsets.only(bottom: 3, left: 48, right: 48,),
+                //         shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.circular(22),
+                //         ),
+                //       ),
+                //     );
+                //
+                //   },
+                //
+                //   child: Text(
+                //     'archery.team131@gmail.com',
+                //     style: TextStyle(fontSize: 12, color: Colors.blue),
+                //   ),
+                // )
               )
             ],
           )

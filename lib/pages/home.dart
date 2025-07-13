@@ -48,161 +48,161 @@ class _HomeState extends State<Home> {
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 90 : 0),
       child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orangeAccent.shade100,
-            padding: EdgeInsets.symmetric(vertical: 12),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orangeAccent.shade100,
+          padding: EdgeInsets.symmetric(vertical: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+        ),
 
-          onPressed: () async {
-            sl<Data>().current_name = current_notes[index];
-            await Navigator.pushNamed(context, '/table', arguments: 'w');
-            await sl<Data>().save();
+        onPressed: () async {
+          sl<Data>().current_name = current_notes[index];
+          await Navigator.pushNamed(context, '/table', arguments: 'w');
+          await sl<Data>().save();
 
-            setState(() {
-              notes = sl<Data>().getNotes();
-              current_notes = sl<Data>().getNotes();
-              name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
-            });
-          },
+          setState(() {
+            notes = sl<Data>().getNotes();
+            current_notes = sl<Data>().getNotes();
+            name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
+          });
+        },
 
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded (
-                  child: Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            current_notes[index].split('_')[0],
-                            style: TextStyle(color: Colors.black, fontSize: 16),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            current_notes[index].split('_').sublist(1, 3).join(' '),
-                            style: TextStyle(color: Colors.black54, fontSize: 12),
-                          ),
-                        ],
-                      )
-                  ),
-                ),
-
-                Padding(
-                  padding: EdgeInsets.only(left: 10, right: 0),
-                  child: Row(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded (
+              child: Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${current_notes[index].split('_')[4]}',
-                        style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        ' + ',
+                        current_notes[index].split('_')[0],
                         style: TextStyle(color: Colors.black, fontSize: 16),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${current_notes[index].split('_')[5]}',
-                        style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        ' = ',
-                        style: TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                      Text(
-                        '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                        style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
-                        onSelected: (value) async {
-                          if (value == 'delete') {
-                            String temp = current_notes[index];
-                            setState(() {
-                              notes.remove(current_notes[index]);
-                              current_notes.removeAt(index);
-                              name_current_controller.removeAt(index);
-                            });
-                            await sl<Data>().removeTable(temp);
-                          } else if (value == 'rename') {
-                            showDialog(
-                              useRootNavigator: true,
-                              context: context,
-                              builder: (ctx) => StatefulBuilder(
-                                builder: (ctx2, setStateDialog) => AlertDialog(
-                                  contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      TextField(
-                                        controller: name_current_controller[index],
-                                        onChanged: (v) {
-                                          setStateDialog(() {
-                                            name_note = v;
-                                          });
-                                        },
-                                        maxLength: 60,
-                                        buildCounter: (
-                                            BuildContext context, {
-                                              required int currentLength,
-                                              required int? maxLength,
-                                              required bool isFocused,
-                                            }) => null, // убираем надпись maxLength
-                                        decoration: InputDecoration(
-                                          hintText: 'Название',
-                                          hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
-                                        ),
-                                      ),
-                                      SizedBox(height: 24),
-                                      Center(
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
-                                            String temp = current_notes[index];
-
-                                            setState(() {
-                                              for (int k = 0; k < notes.length; ++k) {
-                                                if (notes[k] == current_notes[index]) {
-                                                  notes[k] = name_note;
-                                                  break;
-                                                }
-                                              }
-                                              current_notes[index] = name_note;
-                                              name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
-                                            });
-
-                                            await sl<Data>().renameTable(temp, name_note);
-
-                                            name_note = 'Новая запись';
-                                            selectedDistance = 'Дистанция: 18м';
-                                            Navigator.of(ctx).pop();
-                                          },
-                                          child: Text('Сохранить'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(value: 'rename', child: Text('Переименовать')),
-                          PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                        ],
+                        current_notes[index].split('_').sublist(1, 3).join(' '),
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
                       ),
                     ],
+                  )
+              ),
+            ),
+
+            Padding(
+              padding: EdgeInsets.only(left: 10, right: 0),
+              child: Row(
+                children: [
+                  Text(
+                    '${current_notes[index].split('_')[4]}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                )
-              ]
-          )
+                  Text(
+                    ' + ',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  Text(
+                    '${current_notes[index].split('_')[5]}',
+                    style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    ' = ',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  Text(
+                    '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
+                    onSelected: (value) async {
+                      if (value == 'delete') {
+                        String temp = current_notes[index];
+                        setState(() {
+                          notes.remove(current_notes[index]);
+                          current_notes.removeAt(index);
+                          name_current_controller.removeAt(index);
+                        });
+                        await sl<Data>().removeTable(temp);
+                      } else if (value == 'rename') {
+                        showDialog(
+                          useRootNavigator: true,
+                          context: context,
+                          builder: (ctx) => StatefulBuilder(
+                            builder: (ctx2, setStateDialog) => AlertDialog(
+                              contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextField(
+                                    controller: name_current_controller[index],
+                                    onChanged: (v) {
+                                      setStateDialog(() {
+                                        name_note = v;
+                                      });
+                                    },
+                                    maxLength: 60,
+                                    buildCounter: (
+                                        BuildContext context, {
+                                          required int currentLength,
+                                          required int? maxLength,
+                                          required bool isFocused,
+                                        }) => null, // убираем надпись maxLength
+                                    decoration: InputDecoration(
+                                      hintText: 'Название',
+                                      hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
+                                    ),
+                                  ),
+                                  SizedBox(height: 24),
+                                  Center(
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
+                                        String temp = current_notes[index];
+
+                                        setState(() {
+                                          for (int k = 0; k < notes.length; ++k) {
+                                            if (notes[k] == current_notes[index]) {
+                                              notes[k] = name_note;
+                                              break;
+                                            }
+                                          }
+                                          current_notes[index] = name_note;
+                                          name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
+                                        });
+
+                                        await sl<Data>().renameTable(temp, name_note);
+
+                                        name_note = 'Новая запись';
+                                        selectedDistance = 'Дистанция: 18м';
+                                        Navigator.of(ctx).pop();
+                                      },
+                                      child: Text('Сохранить'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'rename', child: Text('Переименовать')),
+                      PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          ]
+        )
       ),
     );
   }
@@ -211,7 +211,6 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(56),
         child: Container(
@@ -279,28 +278,28 @@ class _HomeState extends State<Home> {
       ),
 
       body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Padding(
-          padding: EdgeInsets.only(bottom: 0),
-          child: Center(
-            child: Opacity(
-              opacity: 0.2,
-              child: Image.asset(
-                'assets/arch.jpg',
-                width: 300,
-                height: 300,
+          fit: StackFit.expand,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: 0),
+              child: Center(
+                child: Opacity(
+                  opacity: 0.2,
+                  child: Image.asset(
+                    'assets/arch.jpg',
+                    width: 300,
+                    height: 300,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        ListView.builder(
-          itemCount: current_notes.length,
-          itemBuilder: (context, index) {
-            return button(context, index, index == current_notes.length - 1);
-          },
-        ),
-        ]
+            ListView.builder(
+              itemCount: current_notes.length,
+              itemBuilder: (context, index) {
+                return button(context, index, index == current_notes.length - 1);
+              },
+            ),
+          ]
       ),
 
       floatingActionButton: FloatingActionButton(

@@ -13,7 +13,26 @@ import 'package:archery/pages/enter.dart';
 import 'package:archery/pages/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// import 'package:flutter/foundation.dart';
+
 Future<Widget> createMainApp() async {
+  // if (kIsWeb) {
+  //   // Web
+  //   await Firebase.initializeApp(
+  //     options: FirebaseOptions(
+  //       apiKey: 'AIzaSyC5WHz6knxVTcHhaTJ5VGYrXpwoaRIQzhw',
+  //       authDomain: 'archery-b48e9.firebaseapp.com',
+  //       projectId: 'archery-b48e9',
+  //       storageBucket: 'archery-b48e9.appspot.com',
+  //       messagingSenderId: '952733600015',
+  //       appId: '1:952733600015:web:ea744064483c2ba454167a',
+  //       measurementId: 'G-4C8QXCW7ZD',
+  //     ),
+  //   );
+  // } else {
+  //   await Firebase.initializeApp(); // Android/iOS
+  // }
+
   await Firebase.initializeApp();
   FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
 

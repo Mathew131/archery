@@ -13,9 +13,9 @@ class Enter extends StatefulWidget {
 
 class _EnterState extends State<Enter> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _obscure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +53,19 @@ class _EnterState extends State<Enter> {
                   width: 320,
                   child: TextFormField(
                     controller: passwordController,
-                    obscureText: true,
+                    obscureText: _obscure,
                     decoration: InputDecoration(
                       labelText: 'Пароль',
                       hintText: 'Введите пароль',
                       prefixIcon: Icon(Icons.lock, color: Colors.orange),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () {
+                          setState(() {
+                            _obscure = !_obscure;
+                          });
+                        },
+                      ),
                       border: OutlineInputBorder(),
                     ),
                     validator: MinLengthValidator(8, errorText: 'Минимум 8 символов'),
@@ -90,7 +98,7 @@ class _EnterState extends State<Enter> {
 
                         if (user != null) { // user.emailVerified
                           await sl<Data>().searchAndSaveTokenByEmail(emailController.text);
-                          await Navigator.pushNamed(context, '/');
+                          await Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false,);
                         }
                       } on FirebaseAuthException catch (e) {
                         String msg = 'Ошибка входа';
