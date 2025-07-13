@@ -128,6 +128,7 @@ class _RegisterState extends State<Register> {
                             _obscure = !_obscure;
                           });
                         },
+                        color: Colors.black38,
                       ),
                       border: OutlineInputBorder(),
                     ),

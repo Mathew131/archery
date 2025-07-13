@@ -65,6 +65,7 @@ class _EnterState extends State<Enter> {
                             _obscure = !_obscure;
                           });
                         },
+                        color: Colors.black38,
                       ),
                       border: OutlineInputBorder(),
                     ),
@@ -98,7 +99,7 @@ class _EnterState extends State<Enter> {
 
                         if (user != null) { // user.emailVerified
                           await sl<Data>().searchAndSaveTokenByEmail(emailController.text);
-                          await Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false,);
+                          await Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false,);
                         }
                       } on FirebaseAuthException catch (e) {
                         String msg = 'Ошибка входа';
