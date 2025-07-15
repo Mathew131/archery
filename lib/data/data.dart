@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Data {
   String tokenKey = 'auth_token';
@@ -19,7 +19,7 @@ class Data {
   Future<void> firstSaveToken(String name, String lastname, String email, String type) async {
     final prefs = await SharedPreferences.getInstance();
     token = '$name:$lastname:$email:$type';
-    await prefs.setString(tokenKey, '$name:$lastname:$email:$type');
+    await prefs.setString(tokenKey, token);
 
     String emailKey = token.split(':')[2].replaceAll('.', ','); // в ключе в firebase не надо точек
     String name_surname = '${token.split(':')[0]}:${token.split(':')[1]}';
@@ -27,15 +27,20 @@ class Data {
       await FirebaseFirestore.instance.collection('users').doc('sportsmen_en').update({emailKey : name_surname});
       await FirebaseFirestore.instance.collection('users').doc('sportsmen_ne').update({name_surname : emailKey});
     } else {
-      await FirebaseFirestore.instance.collection('users').doc('coach_en').update({emailKey : name_surname});
-      await FirebaseFirestore.instance.collection('users').doc('coach_ne').update({name_surname : emailKey});
+      await FirebaseFirestore.instance.collection('users').doc('coaches_en').update({emailKey : name_surname});
+      await FirebaseFirestore.instance.collection('users').doc('coaches_ne').update({name_surname : emailKey});
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
     tables.clear();
     sportsmen.clear();
     coaches.clear();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(tokenKey, '');
+
+    await FirebaseAuth.instance.signOut();
   }
 
   Future<void> saveToken(String name, String surname, String email, String type) async {
@@ -45,7 +50,7 @@ class Data {
   }
 
   Future<void> searchAndSaveTokenByEmail(String email) async {
-    var coachData = FirebaseFirestore.instance.collection('users').doc('coach_en').get();
+    var coachData = FirebaseFirestore.instance.collection('users').doc('coaches_en').get();
     var sportsmenData = FirebaseFirestore.instance.collection('users').doc('sportsmen_en').get();
     var results = await Future.wait([coachData, sportsmenData]);
     String emailKey = email.replaceAll('.', ',');
@@ -124,6 +129,42 @@ class Data {
     return sportsmen_in_order;
   }
 
+  Future<void> removeUser(String _token) async {
+    String email = _token.split(':')[2];
+    email = email.replaceAll('.', ',');
+    if (_token.split(':')[3] == 'sportsman') {
+      await FirebaseFirestore.instance.collection('users').doc('sportsmen_en').update({email: FieldValue.delete(),});
+      await FirebaseFirestore.instance.collection('users').doc('sportsmen_ne').update({'${_token.split(':')[0]}:${_token.split(':')[1]}': FieldValue.delete(),});
+
+      DocumentSnapshot  doc = await FirebaseFirestore.instance.collection(_token).doc('coaches').get();
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      for (var token_c in data['data']) {
+        await FirebaseFirestore.instance.collection(token_c).doc('sportsmen').set({'data': FieldValue.arrayRemove([_token])}, SetOptions(merge: true));
+      }
+    } else {
+      await FirebaseFirestore.instance.collection('users').doc('coaches_en').update({email: FieldValue.delete(),});
+      await FirebaseFirestore.instance.collection('users').doc('coaches_ne').update({'${_token.split(':')[0]}:${_token.split(':')[1]}': FieldValue.delete(),});
+
+      DocumentSnapshot  doc = await FirebaseFirestore.instance.collection(_token).doc('sportsmen').get();
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      for (var token_s in data['data']) {
+        await FirebaseFirestore.instance.collection(token_s).doc('coaches').set({'data': FieldValue.arrayRemove([_token])}, SetOptions(merge: true));
+      }
+    }
+
+    final collection = FirebaseFirestore.instance.collection(_token);
+    final snapshots = await collection.get();
+
+    for (final doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+
+    // этот код удаляет только данные пользователя из Firestore, но не удаляет сам аккаунт из Firebase Authentication.
+    // Это необходимо сделать вручную.
+
+    logout();
+  }
+
   // tables ------------------------------------------------------
 
   Future<void> removeTable(String name_note) async {
@@ -160,12 +201,6 @@ class Data {
   List<List<List<int>>> getTable(String name_note) {
     return tables[name_note]!; // передаем ссылку
   }
-
-  // Future<void> updateTable(String name_note, List<List<List<int>>> table) async {
-  //   // tables[name_note] = table;
-  //
-  //   await save();
-  // }
 
   List<String> getNotes() {
     var keys_in_order = tables.keys.toList();
@@ -229,7 +264,6 @@ class Data {
       }
     }));
   }
-
 
   // самое важное ----------------------------------------------------------------
   Future<void> save() async {

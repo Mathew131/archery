@@ -22,33 +22,14 @@ class _RegisterState extends State<Register> {
   bool highlightButton = false;
   bool _obscure = true;
 
-  // Future<void> load_data() async {
-  //   final loggedIn = await sl<Data>().isLoggedIn();
-  //
-  //   if (loggedIn) {
-  //     String token = await sl<Data>().loadToken();
-  //     firstNameController.text = token.split(':')[0];
-  //     lastNameController.text = token.split(':')[1];
-  //     emailController.text = token.split(':')[2];
-  //     setState(() {
-  //       type = token.split(':')[3];
-  //     });
-  //   }
-  // }
-
   @override
   void initState() {
-    // setState(() {
-    //   load_data();
-    // });
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: Text('Вход')),
       body: Align(
         alignment: Alignment(0, 0),
         child: SingleChildScrollView(
@@ -223,7 +204,7 @@ class _RegisterState extends State<Register> {
                           );
 
                           FocusScope.of(context).unfocus();
-                          await Navigator.pushReplacementNamed(context, '/');
+                          await Navigator.pushReplacementNamed(context, '/main_navigation');
                           //
 
                           // с подтверждением

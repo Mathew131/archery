@@ -117,7 +117,7 @@ class _SportsmenState extends State<Sportsmen> {
           child: AppBar(
             // surfaceTintColor: Colors.transparent,
             title: DropdownButtonHideUnderline(
-              child: Text('Мои спортсмены')
+                child: Text('Мои спортсмены')
             ),
             automaticallyImplyLeading: false,
             centerTitle: true,

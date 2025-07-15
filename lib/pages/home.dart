@@ -278,30 +278,31 @@ class _HomeState extends State<Home> {
       ),
 
       body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: 0),
-              child: Center(
-                child: Opacity(
-                  opacity: 0.2,
-                  child: Image.asset(
-                    'assets/arch.jpg',
-                    width: 300,
-                    height: 300,
-                  ),
+        fit: StackFit.expand,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: 0),
+            child: Center(
+              child: Opacity(
+                opacity: 0.2,
+                child: Image.asset(
+                  'assets/arch.jpg',
+                  width: 300,
+                  height: 300,
                 ),
               ),
             ),
-            ListView.builder(
-              itemCount: current_notes.length,
-              itemBuilder: (context, index) {
-                return button(context, index, index == current_notes.length - 1);
-              },
-            ),
-          ]
+          ),
+          ListView.builder(
+            itemCount: current_notes.length,
+            itemBuilder: (context, index) {
+              return button(context, index, index == current_notes.length - 1);
+            },
+          ),
+        ]
       ),
 
+      // resizeToAvoidBottomInset: false, // не помогает, клавиаутру все равно поднимает кнопку
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color(0xFF95d5b2),
         elevation: 3,

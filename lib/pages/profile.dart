@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -40,7 +39,6 @@ class _ProfileState extends State<Profile> {
 
   Future<void> logout(BuildContext context) async {
     sl<Data>().logout();
-    await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, '/registration');
   }
 

@@ -255,6 +255,9 @@ class _TablePageState extends State<TablePage> {
                     keyboardVisible = false;
                   });
                   await sl<Data>().save();
+                  setState(() {
+                    val = sl<Data>().tables[sl<Data>().current_name]!;
+                  });
                 } else if (label == '<-') {
                   await deleteText(context);
                 } else {
@@ -387,6 +390,7 @@ class _TablePageState extends State<TablePage> {
                   fontWeight: FontWeight.w400,
                 ),
 
+                textAlignVertical: TextAlignVertical.center,
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.none,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -432,6 +436,7 @@ class _TablePageState extends State<TablePage> {
                   child: TextField(
                     controller: sumControllers[table][i],
                     readOnly: true,
+                    textAlignVertical: TextAlignVertical.center,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
@@ -470,6 +475,7 @@ class _TablePageState extends State<TablePage> {
                   child: TextField(
                     controller: sumSumControllers[table][i],
                     readOnly: true,
+                    textAlignVertical: TextAlignVertical.center,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
@@ -531,11 +537,8 @@ class _TablePageState extends State<TablePage> {
                   onTap: () {},
                   child: AbsorbPointer(
                     child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
                       textAlign: TextAlign.center,
-                      // controller: TextEditingController(
-                      //   text: val[0][cnt_ser-1][cnt_shoot + 1] != -1 && val[1][cnt_ser-1][cnt_shoot + 1] != -1 ?
-                      //   (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',
-                      // ),
                       controller: TextEditingController(
                         text: isFull(0) && isFull(1) ?
                         (val[0][cnt_ser-1][cnt_shoot + 1] + val[1][cnt_ser-1][cnt_shoot + 1]).toString() : '',

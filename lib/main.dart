@@ -16,6 +16,3 @@ void main() async {
 
   runApp(await createMainApp());
 }
-
-
-

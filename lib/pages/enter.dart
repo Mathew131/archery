@@ -99,7 +99,7 @@ class _EnterState extends State<Enter> {
 
                         if (user != null) { // user.emailVerified
                           await sl<Data>().searchAndSaveTokenByEmail(emailController.text);
-                          await Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false,);
+                          await Navigator.pushNamedAndRemoveUntil(context, '/main_navigation', (Route<dynamic> route) => false,);
                         }
                       } on FirebaseAuthException catch (e) {
                         String msg = 'Ошибка входа';
@@ -111,7 +111,6 @@ class _EnterState extends State<Enter> {
                     child: Text('Войти'),
                   ),
                 ),
-
               ],
             ),
           ),
