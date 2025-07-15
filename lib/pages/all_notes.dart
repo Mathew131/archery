@@ -153,7 +153,7 @@ class _AllNotesState extends State<AllNotes> {
           ),
           child: AppBar(
             // surfaceTintColor: Colors.transparent,
-            title: Text('Записи за месяц'),
+            title: Text('Их записи за месяц'),
             centerTitle: true,
             backgroundColor: Color(0xFFf98948),
           ),
