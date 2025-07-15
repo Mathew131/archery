@@ -98,7 +98,7 @@ class _AllNotesState extends State<AllNotes> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('${text.split(':')[1]} ${text.split(':')[0]}',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 15),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -116,15 +116,15 @@ class _AllNotesState extends State<AllNotes> {
             padding: EdgeInsets.only(left: 10, right: 15),
             child: Row(
               children: [
-                Text('$last0', style: TextStyle(color: ok0 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
+                Text('$last0', style: TextStyle(color: ok0 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold,)),
 
-                Text(' + ', style: TextStyle(color: Colors.black, fontSize: 16)),
+                Text(' + ', style: TextStyle(color: Colors.black, fontSize: 15)),
 
-                Text('$last1', style: TextStyle(color: ok1 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
+                Text('$last1', style: TextStyle(color: ok1 == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold,)),
 
-                Text(' = ', style: TextStyle(color: Colors.black, fontSize: 16)),
+                Text(' = ', style: TextStyle(color: Colors.black, fontSize: 15)),
 
-                Text('${int.parse(last0) + int.parse(last1)}', style: TextStyle(color: (ok0 == 'true' && ok1 == 'true') ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold,)),
+                Text('${int.parse(last0) + int.parse(last1)}', style: TextStyle(color: (ok0 == 'true' && ok1 == 'true') ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold,)),
               ],
             ),
           )
