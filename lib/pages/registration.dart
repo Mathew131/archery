@@ -3,6 +3,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -43,6 +44,9 @@ class _RegisterState extends State<Register> {
                 SizedBox(
                   width: 320,
                   child: TextFormField(
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r':')),
+                    ],
                     controller: firstNameController,
                     decoration: InputDecoration(
                       labelText: 'Имя',
@@ -60,6 +64,9 @@ class _RegisterState extends State<Register> {
                 SizedBox(
                   width: 320,
                   child: TextFormField(
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r':')),
+                    ],
                     controller: lastNameController,
                     decoration: InputDecoration(
                       labelText: 'Фамилия',
@@ -77,6 +84,9 @@ class _RegisterState extends State<Register> {
                 SizedBox(
                   width: 320,
                   child: TextFormField(
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[,:]')),
+                    ],
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'Электронная почта',

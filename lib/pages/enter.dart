@@ -3,6 +3,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 class Enter extends StatefulWidget {
   const Enter({Key? key}) : super(key: key);
@@ -34,6 +35,9 @@ class _EnterState extends State<Enter> {
                 SizedBox(
                   width: 320,
                   child: TextFormField(
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[,:]')),
+                    ],
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'Электронная почта',

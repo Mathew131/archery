@@ -85,7 +85,7 @@ class _HomeState extends State<Home> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        current_notes[index].split('_').sublist(1, 3).join(' '),
+                          '${current_notes[index].split('_')[4]}' == '312' ? current_notes[index].split('_').sublist(1, 3).join(' ') : '18м   11.07.2025',
                         style: TextStyle(color: Colors.black54, fontSize: 12),
                       ),
                     ],
@@ -319,6 +319,9 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     TextField(
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'_')),
+                      ],
                       onChanged: (v) {
                         setStateDialog(() {
                           name_note = v;

@@ -201,6 +201,9 @@ class _SportsmenState extends State<Sportsmen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.deny(RegExp(r':')),
+                            ],
                             onChanged: (v) {
                               setStateDialog(() {
                                 surname = v;
@@ -217,6 +220,9 @@ class _SportsmenState extends State<Sportsmen> {
                           SizedBox(height: 12),
 
                           TextField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.deny(RegExp(r':')),
+                            ],
                             onChanged: (v) {
                               setStateDialog(() {
                                 name = v;
