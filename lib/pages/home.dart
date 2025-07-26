@@ -85,7 +85,7 @@ class _HomeState extends State<Home> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                          '${current_notes[index].split('_')[4]}' == '312' ? current_notes[index].split('_').sublist(1, 3).join(' ') : '18м   11.07.2025',
+                        current_notes[index].split('_').sublist(1, 3).join(' '),
                         style: TextStyle(color: Colors.black54, fontSize: 12),
                       ),
                     ],
