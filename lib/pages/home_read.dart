@@ -54,6 +54,8 @@ class _HomeReadState extends State<HomeRead> {
         notes = sl<Data>().getNotes();
         current_notes = sl<Data>().getNotes();
       });
+
+      isVisible = await sl<Data>().loadIsVisibleNotes();
     });
   }
 
@@ -86,10 +88,11 @@ class _HomeReadState extends State<HomeRead> {
             ),
           ),
         ),
-        onPressed: () {
+        onPressed: () async {
           setState(() {
             isVisible[currentMonthYear] = isVisible.containsKey(currentMonthYear) ? !isVisible[currentMonthYear]! : false;
           });
+          await sl<Data>().saveIsVisibleNotes(isVisible);
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

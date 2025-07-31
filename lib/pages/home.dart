@@ -44,6 +44,8 @@ class _HomeState extends State<Home> {
         current_notes = sl<Data>().getNotes();
         name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
       });
+
+      isVisible = await sl<Data>().loadIsVisibleNotes();
     });
   }
 
@@ -76,10 +78,11 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
-        onPressed: () {
+        onPressed: () async {
           setState(() {
             isVisible[currentMonthYear] = isVisible.containsKey(currentMonthYear) ? !isVisible[currentMonthYear]! : false;
           });
+          await sl<Data>().saveIsVisibleNotes(isVisible);
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

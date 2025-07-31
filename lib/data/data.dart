@@ -13,6 +13,23 @@ class Data {
   late int cnt_ser;
   late int cnt_shoot;
 
+
+  // сохраняем в локальную память
+  Future<void> saveIsVisibleNotes(Map<String, bool> isVisible) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = jsonEncode(isVisible);
+    await prefs.setString('isVisibleNotes', encoded);
+  }
+
+  Future<Map<String, bool>> loadIsVisibleNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = prefs.getString('isVisibleNotes');
+    if (encoded == null) return {};
+
+    final Map<String, dynamic> decoded = jsonDecode(encoded);
+    return decoded.map((key, value) => MapEntry(key, value == true));
+  }
+
   // token --------------------------------------------------------
 
   // вызывается только в registration, когда мы первый раз заходим
