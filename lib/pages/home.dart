@@ -18,6 +18,21 @@ class _HomeState extends State<Home> {
   String name_note = 'Новая запись';
   String selectedDistance = 'Дистанция: 18м';
   String selectedFilterDistance = 'Все дистанции';
+  Map<String, bool> isVisible = {};
+  Map<String, String> month = {
+    '01': 'Январь',
+    '02': 'Февраль',
+    '03': 'Март',
+    '04': 'Апрель',
+    '05': 'Май',
+    '06': 'Июнь',
+    '07': 'Июль',
+    '08': 'Август',
+    '09': 'Сентябрь',
+    '10': 'Октябрь',
+    '11': 'Ноябрь',
+    '12': 'Декабрь',
+  };
 
   @override
   void initState() {
@@ -37,43 +52,94 @@ class _HomeState extends State<Home> {
       return [
         'Дистанция: 12м','Дистанция: 18м','Дистанция: 30м',
         'Дистанция: 40м','Дистанция: 50м','Дистанция: 60м',
-        'Дистанция: 70м','Дистанция: 80м','Дистанция: 90м',
+        'Дистанция: 70м','Дистанция: 90м',
       ];
     } else {
       return ['Дистанция: $selectedFilterDistance'];
     }
   }
 
-  Widget button(BuildContext context, int index, bool isLast) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, isLast ? 90 : 0),
-      child: ElevatedButton(
+  Widget? getMonthHeader(int index) {
+    String currentMonthYear = current_notes[index].split('_')[2].split('.').sublist(1, 3).join('.');
+
+    if (index == 0 || currentMonthYear != current_notes[index-1].split('_')[2].split('.').sublist(1, 3).join('.')) {
+
+      return ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orangeAccent.shade100,
+          backgroundColor: Colors.grey.shade100,
           padding: EdgeInsets.symmetric(vertical: 12),
-          elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(
+              color: Colors.grey.shade200,
+              width: 1,
+            ),
           ),
         ),
-
-        onPressed: () async {
-          sl<Data>().current_name = current_notes[index];
-          await Navigator.pushNamed(context, '/table', arguments: 'w');
-          await sl<Data>().save();
-
+        onPressed: () {
           setState(() {
-            notes = sl<Data>().getNotes();
-            current_notes = sl<Data>().getNotes();
-            name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
+            isVisible[currentMonthYear] = isVisible.containsKey(currentMonthYear) ? !isVisible[currentMonthYear]! : false;
           });
         },
-
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded (
-              child: Padding(
+            Padding(
+              padding: EdgeInsets.fromLTRB(36, 0, 36, 0),
+              child: Text(
+                '${month[currentMonthYear.split('.')[0]]} ${currentMonthYear.split('.')[1]}',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(36, 0, 36, 0),
+              child:  Icon(
+                (isVisible.containsKey(currentMonthYear) ? !isVisible[currentMonthYear]! : false) ? Icons.expand_more : Icons.expand_less,
+                // color: Colors.black,
+                size: 23,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return null;
+  }
+
+  Widget? getButton(BuildContext context, int index, bool isLast) {
+    final key = isVisible[current_notes[index].split('_')[2].split('.').sublist(1, 3).join('.')] ?? true;
+
+    if (key) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(16, 6, 16, isLast ? 90 : 6),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orangeAccent.shade100,
+            padding: EdgeInsets.symmetric(vertical: 12),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+
+          onPressed: () async {
+            sl<Data>().current_name = current_notes[index];
+            await Navigator.pushNamed(context, '/table', arguments: 'w');
+            await sl<Data>().save();
+
+            setState(() {
+              notes = sl<Data>().getNotes();
+              current_notes = sl<Data>().getNotes();
+              name_current_controller = sl<Data>().getNotes().map((note) => TextEditingController(text: note.split('_')[0])).toList();
+            });
+          },
+
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded (
+                child: Padding(
                   padding: EdgeInsets.only(left: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,121 +156,124 @@ class _HomeState extends State<Home> {
                       ),
                     ],
                   )
+                ),
               ),
-            ),
 
-            Padding(
-              padding: EdgeInsets.only(left: 10, right: 0),
-              child: Row(
-                children: [
-                  Text(
-                    '${current_notes[index].split('_')[4]}',
-                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    ' + ',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                  Text(
-                    '${current_notes[index].split('_')[5]}',
-                    style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    ' = ',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                  Text(
-                    '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+              Padding(
+                padding: EdgeInsets.only(left: 10, right: 0),
+                child: Row(
+                  children: [
+                    Text(
+                      '${current_notes[index].split('_')[4]}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      ' + ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
+                      '${current_notes[index].split('_')[5]}',
+                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      ' = ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
+                      '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
 
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
-                    onSelected: (value) async {
-                      if (value == 'delete') {
-                        String temp = current_notes[index];
-                        setState(() {
-                          notes.remove(current_notes[index]);
-                          current_notes.removeAt(index);
-                          name_current_controller.removeAt(index);
-                        });
-                        await sl<Data>().removeTable(temp);
-                      } else if (value == 'rename') {
-                        showDialog(
-                          useRootNavigator: true,
-                          context: context,
-                          builder: (ctx) => StatefulBuilder(
-                            builder: (ctx2, setStateDialog) => AlertDialog(
-                              contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextField(
-                                    controller: name_current_controller[index],
-                                    onChanged: (v) {
-                                      setStateDialog(() {
-                                        name_note = v;
-                                      });
-                                    },
-                                    maxLength: 60,
-                                    buildCounter: (
-                                        BuildContext context, {
-                                          required int currentLength,
-                                          required int? maxLength,
-                                          required bool isFocused,
-                                        }) => null, // убираем надпись maxLength
-                                    decoration: InputDecoration(
-                                      hintText: 'Название',
-                                      hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
-                                    ),
-                                  ),
-                                  SizedBox(height: 24),
-                                  Center(
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
-                                        String temp = current_notes[index];
-
-                                        setState(() {
-                                          for (int k = 0; k < notes.length; ++k) {
-                                            if (notes[k] == current_notes[index]) {
-                                              notes[k] = name_note;
-                                              break;
-                                            }
-                                          }
-                                          current_notes[index] = name_note;
-                                          name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
+                    PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert, color: Colors.black, size: 22),
+                      onSelected: (value) async {
+                        if (value == 'delete') {
+                          String temp = current_notes[index];
+                          setState(() {
+                            notes.remove(current_notes[index]);
+                            current_notes.removeAt(index);
+                            name_current_controller.removeAt(index);
+                          });
+                          await sl<Data>().removeTable(temp);
+                        } else if (value == 'rename') {
+                          showDialog(
+                            useRootNavigator: true,
+                            context: context,
+                            builder: (ctx) => StatefulBuilder(
+                              builder: (ctx2, setStateDialog) => AlertDialog(
+                                contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 16),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextField(
+                                      controller: name_current_controller[index],
+                                      onChanged: (v) {
+                                        setStateDialog(() {
+                                          name_note = v;
                                         });
-
-                                        await sl<Data>().renameTable(temp, name_note);
-
-                                        name_note = 'Новая запись';
-                                        selectedDistance = 'Дистанция: 18м';
-                                        Navigator.of(ctx).pop();
                                       },
-                                      child: Text('Сохранить'),
+                                      maxLength: 60,
+                                      buildCounter: (
+                                          BuildContext context, {
+                                            required int currentLength,
+                                            required int? maxLength,
+                                            required bool isFocused,
+                                          }) => null, // убираем надпись maxLength
+                                      decoration: InputDecoration(
+                                        hintText: 'Название',
+                                        hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(height: 24),
+                                    Center(
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          name_note = '${name_note}_${current_notes[index].substring(current_notes[index].indexOf('_') + 1)}';
+                                          String temp = current_notes[index];
+
+                                          setState(() {
+                                            for (int k = 0; k < notes.length; ++k) {
+                                              if (notes[k] == current_notes[index]) {
+                                                notes[k] = name_note;
+                                                break;
+                                              }
+                                            }
+                                            current_notes[index] = name_note;
+                                            name_current_controller[index] = TextEditingController(text: name_note.split('_')[0]);
+                                          });
+
+                                          await sl<Data>().renameTable(temp, name_note);
+
+                                          name_note = 'Новая запись';
+                                          selectedDistance = 'Дистанция: 18м';
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text('Сохранить'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(value: 'rename', child: Text('Переименовать')),
-                      PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          ]
-        )
-      ),
-    );
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(value: 'rename', child: Text('Переименовать')),
+                        PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            ]
+          )
+        ),
+      );
+    } else {
+      return null;
+    }
   }
 
   @override
@@ -233,7 +302,7 @@ class _HomeState extends State<Home> {
                 ),
                 value: selectedFilterDistance,
                 style: TextStyle(color: Colors.black, fontSize: 20),
-                items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '80м', '90м'].map((d) {
+                items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м', '60м', '70м', '90м'].map((d) {
                   return DropdownMenuItem(
                     value: d,
                     child: d == 'Все дистанции' ? Text('$d') : Text('Дистанция: $d'),
@@ -294,15 +363,26 @@ class _HomeState extends State<Home> {
             ),
           ),
           ListView.builder(
+
             itemCount: current_notes.length,
             itemBuilder: (context, index) {
-              return button(context, index, index == current_notes.length - 1);
+              final monthHeader = getMonthHeader(index);
+              final button = getButton(context, index, index == current_notes.length - 1);
+
+              return Column(
+                children: [
+                  if (monthHeader != null) monthHeader,
+                  if (button != null) ... [
+                    button,
+                  ] else if (index == current_notes.length - 1) SizedBox(height: 90,),
+                ],
+              );
             },
           ),
         ]
       ),
 
-      // resizeToAvoidBottomInset: false, // не помогает, клавиаутру все равно поднимает кнопку
+      // resizeToAvoidBottomInset: false, // не помогает, клавиатура все равно поднимает кнопку
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color(0xFF95d5b2),
         elevation: 3,

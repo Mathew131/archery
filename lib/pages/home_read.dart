@@ -46,7 +46,7 @@ class _HomeReadState extends State<HomeRead> {
       return [
         'Дистанция: 12м','Дистанция: 18м','Дистанция: 30м',
         'Дистанция: 40м','Дистанция: 50м','Дистанция: 60м',
-        'Дистанция: 70м','Дистанция: 80м','Дистанция: 90м',
+        'Дистанция: 70м','Дистанция: 90м',
       ];
     } else {
       return ['Дистанция: $selectedFilterDistance'];
@@ -57,79 +57,79 @@ class _HomeReadState extends State<HomeRead> {
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orangeAccent.shade100,
-            padding: EdgeInsets.symmetric(vertical: 12),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orangeAccent.shade100,
+          padding: EdgeInsets.symmetric(vertical: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+        ),
 
-          onPressed: () async {
-            sl<Data>().current_name = current_notes[index];
-            await Navigator.pushNamed(context, '/table', arguments: 'r');
+        onPressed: () async {
+          sl<Data>().current_name = current_notes[index];
+          await Navigator.pushNamed(context, '/table', arguments: 'r');
 
-            setState(() {
-              notes = sl<Data>().getNotes();
-              current_notes = sl<Data>().getNotes();
-            });
-          },
+          setState(() {
+            notes = sl<Data>().getNotes();
+            current_notes = sl<Data>().getNotes();
+          });
+        },
 
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Padding(
-                    padding: EdgeInsets.only(left: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          current_notes[index].split('_')[0],
-                          style: TextStyle(color: Colors.black, fontSize: 16),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          current_notes[index].split('_').sublist(1, 3).join(' '),
-                          style: TextStyle(color: Colors.black54, fontSize: 12),
-                        ),
-                      ],
-                    )
-                ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        current_notes[index].split('_')[0],
+                        style: TextStyle(color: Colors.black, fontSize: 16),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        current_notes[index].split('_').sublist(1, 3).join(' '),
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+                  )
               ),
+            ),
 
 
-              Padding(
-                padding: EdgeInsets.only(left: 10, right: 20),
-                child: Row(
-                  children: [
-                    Text(
-                      '${current_notes[index].split('_')[4]}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      ' + ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    Text(
-                      '${current_notes[index].split('_')[5]}',
-                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      ' = ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    Text(
-                      '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+            Padding(
+              padding: EdgeInsets.only(left: 10, right: 20),
+              child: Row(
+                children: [
+                  Text(
+                    '${current_notes[index].split('_')[4]}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    ' + ',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  Text(
+                    '${current_notes[index].split('_')[5]}',
+                    style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    ' = ',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  Text(
+                    '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
+                    style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-            ]
-          )
+            ),
+          ]
+        )
       ),
     );
   }
@@ -166,7 +166,7 @@ class _HomeReadState extends State<HomeRead> {
                     IconStyleData(iconEnabledColor: Colors.black),
                     style: TextStyle(color: Colors.black, fontSize: 20),
                     items: ['Все дистанции', '12м', '18м', '30м', '40м', '50м',
-                      '60м', '70м', '80м', '90м'].map((d) => DropdownMenuItem(
+                      '60м', '70м', '90м'].map((d) => DropdownMenuItem(
                       value: d,
                       child: d == 'Все дистанции' ? Text(d) : Text('Дистанция: $d'),
                     )).toList(),
@@ -228,7 +228,7 @@ class _NameBanner extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrink, bool overlaps) {
     return Material(
       elevation: 2,
-      color: Colors.white,
+      color: Colors.grey.shade100,
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 16),
