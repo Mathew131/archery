@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
+import 'package:archery/pages/target.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class TablePage extends StatefulWidget {
   const TablePage({super.key});
@@ -21,6 +23,8 @@ class _TablePageState extends State<TablePage> {
   late bool isVisible;
   late bool is12_18;
   late int dop;
+  late bool isTargetKeyboard = true;
+  List<String> tripletarget = ['Верхняя мишень', 'Средняя мишень', 'Нижняя мишень'];
 
   late int currentTable = 0;
   late int currentI = 0;
@@ -148,6 +152,12 @@ class _TablePageState extends State<TablePage> {
     final j = currentJ;
 
     final controller = inputControllers[t][i][j];
+
+    String temp = controller.text;
+    if (temp != '') {
+      await deleteText(context);
+    }
+
     controller.text = text;
     controller.selection = TextSelection.collapsed(offset: text.length);
     await onValueChanged(text, t, i, j);
@@ -180,7 +190,13 @@ class _TablePageState extends State<TablePage> {
     controller.text = '';
     controller.selection = TextSelection.collapsed(offset: ''.length);
     await onValueChanged('', t, i, j);
+
     if (temp != '') {
+      Offset pos = sl<Data>().valueByTarget[sl<Data>().current_name]![currentTable][currentI][currentJ];
+      if (pos != Offset(-1, -1)) {
+        sl<Data>().hits[sl<Data>().current_name]![currentTable][(sl<Data>().current_name.split('_')[1] == '18м  ') ? currentJ : 0].remove(pos);
+        sl<Data>().valueByTarget[sl<Data>().current_name]![currentTable][currentI][currentJ] = Offset(-1, -1);
+      }
       return;
     }
 
@@ -205,7 +221,7 @@ class _TablePageState extends State<TablePage> {
     const labels = [
       '1','2','3','<-',
       '4','5','6','OK',
-      '7','8','9','',
+      '7','8','9','TK',
       'м', '10','x','',
     ];
 
@@ -233,7 +249,9 @@ class _TablePageState extends State<TablePage> {
           Color outerColor = Colors.grey[350]!;
           Widget child;
 
-          if (label == '<-') {
+          if (label == 'TK') {
+            child = SvgPicture.asset('assets/target18.svg', width: 40, height: 40);
+          } else if (label == '<-') {
             child = const Icon(Icons.backspace_outlined, size: 24);
           } else if (label == 'OK') {
             child = const Text('OK', style: TextStyle(fontSize: 24, color: Colors.blue));
@@ -249,7 +267,11 @@ class _TablePageState extends State<TablePage> {
             child: InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: isEmpty ? null : () async {
-                if (label == 'OK') {
+                if (label == 'TK') {
+                  setState(() {
+                    isTargetKeyboard = true;
+                  });
+                } else if (label == 'OK') {
                   setState(() {
                     Focus = false;
                     keyboardVisible = false;
@@ -268,6 +290,204 @@ class _TablePageState extends State<TablePage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget buildTarget18(int curTable, int curJ, bool isView) {
+    return Column(
+      children: [
+        SizedBox(
+          width: 220,
+          height: 220,
+          child: TargetWidget(
+            svgAsset: 'assets/target18.svg',
+            onShot: (pos) async {
+              final score = calculateScore(pos, Size(220, 220), 220, 5);
+              int pred_currentI = currentI;
+              await insertText(context, score);
+              sl<Data>().valueByTarget[sl<Data>().current_name]![curTable][pred_currentI][curJ] = sl<Data>().hits[sl<Data>().current_name]![curTable][curJ].last;
+            },
+            currentTable: curTable,
+            curJ: curJ,
+            width: 220,
+            height: 220,
+            sizeHits: 4,
+            isView: isView,
+            size: Size(220, 220),
+          ),
+        ),
+
+        SizedBox(height: 12),
+
+        if (!isView) Text('${tripletarget[curJ]}', style: TextStyle(fontSize: 20, color: Colors.black)),
+      ],
+    );
+  }
+
+  Widget buildMediumTarget(int curTable, bool isView) {
+    return Column(
+      children: [
+        SizedBox(
+          width: 230,
+          height: 230,
+          child: TargetWidget(
+            svgAsset: 'assets/medium_target.svg',
+            onShot: (pos) async {
+              final score = calculateScore(pos, Size(230, 230), 230, 6.0);
+              int pred_currentI = currentI;
+              int pred_currentJ = currentJ;
+              await insertText(context, score);
+              sl<Data>().valueByTarget[sl<Data>().current_name]![curTable][pred_currentI][pred_currentJ] = sl<Data>().hits[sl<Data>().current_name]![curTable][0].last;
+            },
+            currentTable: curTable,
+            curJ: 0,
+            width: 230,
+            height: 230,
+            sizeHits: 3,
+            isView: isView,
+            size: Size(230, 230),
+          ),
+        ),
+        SizedBox(height: 20,)
+      ],
+    );
+  }
+
+  Widget buildBigTarget(int curTable, bool isView) {
+    return Column(
+      children: [
+        SizedBox(
+          width: 300,
+          height: 300,
+          child: TargetWidget(
+            svgAsset: 'assets/big_target.svg',
+            onShot: (pos) async {
+              final score = calculateScore(pos, Size(300, 300), 300, 10.0);
+              int pred_currentI = currentI;
+              int pred_currentJ = currentJ;
+              await insertText(context, score);
+              sl<Data>().valueByTarget[sl<Data>().current_name]![curTable][pred_currentI][pred_currentJ] = sl<Data>().hits[sl<Data>().current_name]![curTable][0].last;
+            },
+            currentTable: curTable,
+            curJ: 0,
+            width: 300,
+            height: 300,
+            sizeHits: 3,
+            isView: isView,
+            size: Size(300, 300),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCustomTargetKeyboard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black38)],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 20, top: 10),
+                child: Column(
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        await sl<Data>().save();
+                        setState(() {
+                          val = sl<Data>().tables[sl<Data>().current_name]!;
+                        });
+
+                        setState(() {
+                          isTargetKeyboard = false;
+                        });
+                      },
+                      icon: Opacity(
+                        opacity: 0.5,
+                        child: SvgPicture.asset('assets/icon_table.svg', width: 40, height: 40),
+                      ),
+                    ),
+                  ],
+                )
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(right: 16, top: 10),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: AspectRatio(
+                        aspectRatio: 1.5,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[250],
+                            // foregroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 1,
+                          ),
+                          onPressed: () async {
+                            await deleteText(context);
+                          },
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Icon(Icons.backspace_outlined, size: 30),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(width: 12),
+
+                    SizedBox(
+                      height: 50,
+                      child: AspectRatio(
+                        aspectRatio: 1.5,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[250],
+                            foregroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 1,
+                          ),
+                          onPressed: () async {
+                            setState(() {
+                              Focus = false;
+                              keyboardVisible = false;
+                            });
+                            await sl<Data>().save();
+                            setState(() {
+                              val = sl<Data>().tables[sl<Data>().current_name]!;
+                            });
+                          },
+                          child: Text('OK', style: TextStyle(fontSize: 20, color: Colors.blue)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 12),
+
+          if (sl<Data>().current_name.split('_')[1] == '18м  ') ... [
+            buildTarget18(currentTable, currentJ, false),
+          ] else if (sl<Data>().current_name.split('_')[1] == '30м  ' || sl<Data>().current_name.split('_')[1] == '50м  ') ... [
+            buildMediumTarget(currentTable, false),
+          ] else buildBigTarget(currentTable, false),
+
+          SizedBox(height: 24),
+        ],
       ),
     );
   }
@@ -634,11 +854,22 @@ class _TablePageState extends State<TablePage> {
                       ],
                     ],
                   ),
+
+                  if (table == 1) ... [
+                    SizedBox(height: 8),
+                    last_cell(),
+                  ] else SizedBox(height: 24),
+
+
+
+                  if (sl<Data>().current_name.split('_')[1] == '18м  ') ... [
+                    buildTarget18(table, 0, true),
+                    buildTarget18(table, 1, true),
+                    buildTarget18(table, 2, true),
+                  ] else if (sl<Data>().current_name.split('_')[1] == '30м  ' || sl<Data>().current_name.split('_')[1] == '50м  ') ... [
+                    buildMediumTarget(table, true),
+                  ] else buildBigTarget(table, true),
                 ],
-
-                SizedBox(height: 8),
-
-                last_cell(),
 
                 SizedBox(height: 308),
               ]
@@ -650,7 +881,7 @@ class _TablePageState extends State<TablePage> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: buildCustomKeyboard(),
+              child: isTargetKeyboard ? buildCustomTargetKeyboard() : buildCustomKeyboard(),
             )
         ],
       )

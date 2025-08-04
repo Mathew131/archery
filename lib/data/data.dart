@@ -2,19 +2,26 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class Data {
   String tokenKey = 'auth_token';
   late String token;
   Map<String, List<List<List<int>>>> tables = {};
+
+  // список: дистанция, мишень, попадания
+  Map<String, List<List<List<Offset>>>> hits = {}; // не сохранен
+
+  // не сохранен, в таблице находиться индекс hits, который отвечает за ячейку или -1, если мы вводили данные с клавиатуры
+  // список: дистанция, строка таблицы, мишень
+  Map<String, List<List<List<Offset>>>> valueByTarget = {};
   List<String> sportsmen = [];
   List<String> coaches = [];
   String current_name = '';
   late int cnt_ser;
   late int cnt_shoot;
 
-
-  // сохраняем в локальную память
+  // сохраняем в локальную память 
   Future<void> saveIsVisibleNotes(Map<String, bool> isVisible) async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(isVisible);
@@ -212,6 +219,8 @@ class Data {
     }
 
     tables[name_note] = List.generate(2, (_) => List.generate(cnt_ser, (_) => List.filled(cnt_shoot+2, -1)));
+    hits[name_note] = [[[], [], []], [[], [], []]];
+    valueByTarget[name_note] = List.generate(2, (_) => List.generate(10, (_) => List.filled(6, Offset(-1, -1))));
     await save();
   }
 
@@ -282,19 +291,47 @@ class Data {
     }));
   }
 
+  List offsetListToJson(List<List<List<Offset>>>? list) {
+    if (list == null) return [];
+    return list
+        .map((l2) => l2
+        .map((l1) => l1.map((o) => {'dx': o.dx, 'dy': o.dy}).toList())
+        .toList())
+        .toList();
+  }
+
+  List<List<List<Offset>>> offsetListFromJson(dynamic list) {
+    return (list as List)
+        .map((l2) => (l2 as List)
+        .map((l1) => (l1 as List)
+        .map((o) => Offset(o['dx'], o['dy']))
+        .toList())
+        .toList())
+        .toList();
+  }
+
   // самое важное ----------------------------------------------------------------
   Future<void> save() async {
     final data = <String, String>{};
     final oldKeys = List<String>.from(tables.keys);
 
+
     for (final key in oldKeys) {
+      // hits[key] = [[[], [], []], [[], [], []]];
+      // valueByTarget[key] = List.generate(2, (_) => List.generate(10, (_) => List.filled(6, Offset(-1, -1))));
+
       var lw0 = lastWriteElem(0, key);
       var lw1 = lastWriteElem(1, key);
       var rg0 = rg(0, key);
       var rg1 = rg(1, key);
 
       String newKey = '${key.split('_')[0]}_${key.split('_')[1]}_${key.split('_')[2]}_${key.split('_')[3]}_${lw0}_${lw1}_${rg0}_${rg1}';
-      data[newKey] = jsonEncode(tables[key]);
+      // data[newKey] = jsonEncode(tables[key]); // раньше
+      data[newKey] = jsonEncode([
+        tables[key],
+        offsetListToJson(hits[key]),
+        offsetListToJson(valueByTarget[key])
+      ]);
 
 
       if (key != newKey) {
@@ -304,8 +341,25 @@ class Data {
         tables[newKey] = tables[key]!
             .map((table) => table.map((row) => List<int>.from(row)).toList())
             .toList();
-
         tables.remove(key);
+
+        hits[newKey] = hits[key]!
+            .map((list2) => list2
+            .map((list1) => list1
+            .map((offset) => Offset(offset.dx, offset.dy))
+            .toList())
+            .toList())
+            .toList();
+        hits.remove(key);
+
+        valueByTarget[newKey] = valueByTarget[key]!
+            .map((list2) => list2
+            .map((list1) => list1
+            .map((offset) => Offset(offset.dx, offset.dy))
+            .toList())
+            .toList())
+            .toList();
+        valueByTarget.remove(key);
       }
     }
 
@@ -329,19 +383,55 @@ class Data {
 
     final data = tablesSnapshot.data() ?? {};
 
+
     for (final key in data.keys) {
       final encoded = data[key] as String;
-
       final decoded = jsonDecode(encoded);
 
-      final table = (decoded as List)
-          .map((list1) => (list1 as List)
-          .map((list2) => (list2 as List).map((v) => v as int).toList())
-          .toList())
-          .toList();
+      List<List<List<int>>> table;
+      List<List<List<Offset>>> hitsList;
+      List<List<List<Offset>>> valueList;
 
+      // Новый формат — список из 3 элементов: [tables, hits, valueByTarget]
+      if (decoded.length == 3) {
+        table = (decoded[0] as List)
+            .map((l2) => (l2 as List)
+            .map((l1) => List<int>.from(l1 as List))
+            .toList())
+            .toList();
+
+        hitsList = (decoded[1] as List)
+            .map((l2) => (l2 as List)
+            .map((l1) => (l1 as List)
+            .map((o) => Offset(o['dx'], o['dy']))
+            .toList())
+            .toList())
+            .toList();
+
+        valueList = (decoded[2] as List)
+            .map((l2) => (l2 as List)
+            .map((l1) => (l1 as List)
+            .map((o) => Offset(o['dx'], o['dy']))
+            .toList())
+            .toList())
+            .toList();
+      } else { // Старый формат — просто table (List<List<List<int>>>). decoded.length = 2, т.к. 2 дистанции
+        table = (decoded as List)
+            .map((l2) => (l2 as List)
+            .map((l1) => List<int>.from(l1 as List))
+            .toList())
+            .toList();
+
+        hitsList = [[[], [], []], [[], [], []]];
+        valueList = List.generate(2, (_) => List.generate(10, (_) => List.filled(6, Offset(-1, -1))));
+      }
       tables[key] = table;
+      hits[key] = hitsList;
+      valueByTarget[key] = valueList;
     }
+
+
+
 
     final sportsmenSnapshot = results[1];
     sportsmen = (sportsmenSnapshot.data()?['data'] as List?)?.cast<String>() ?? [];

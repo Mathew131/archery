@@ -1,0 +1,46 @@
+<svg version="1.1" style="max-height: 500px" viewBox="-9.909654663276187 -9.985324800000003 19.87958329915511 19.959456" xmlns="http://www.w3.org/2000/svg" width="19.87958329915511" height="19.959456">	
+	 <metadata>
+  	
+		
+		  image/svg+xml
+		  
+		  
+		  
+		  ArcheryGeekery
+		  
+		
+		
+		  
+		  
+		  
+		  
+		  
+		  
+		
+		
+		  
+		  
+		
+		
+	</metadata>
+	
+	<g id="tripleSpot">
+	  <g stroke="black" cx="0" cy="0" stroke-width="0.1">
+		  <circle r="9.9" fill="#00B4E4"/>
+		  <circle r="7.9" fill="#F65058"/>
+		  <circle r="3.9" fill="#FFE552"/>
+	  </g>
+	  
+	  <g stroke="black" cx="0" cy="0" stroke-width="0.05">
+		  <circle r="5.95" fill="none"/>
+		  <circle r="1.95" fill="none"/>
+		  <circle r="0.95" fill="none"/>
+	  </g>
+	  
+	  <line x1="-0.2" y1="-0.2" x2="0.2" y2="0.2" stroke="black" stroke-width="0.1"/>
+	  <line x1="-0.2" y1="0.2" x2="0.2" y2="-0.2" stroke="black" stroke-width="0.1"/>
+	</g>
+  
+	
+	
+</svg>

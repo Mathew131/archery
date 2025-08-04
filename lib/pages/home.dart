@@ -416,7 +416,7 @@ class _HomeState extends State<Home> {
                             required int currentLength,
                             required int? maxLength,
                             required bool isFocused,
-                          }) => null, // убираем надпись maxLength
+                          }) => null,
                       decoration: InputDecoration(
                         hintText: 'Название',
                         hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
