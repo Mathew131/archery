@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 class Data {
   String tokenKey = 'auth_token';
   late String token;
+  bool notification_about_update = true;
+  late String minRequiredVersion;
   Map<String, List<List<List<int>>>> tables = {};
 
   // список: дистанция, мишень, попадания
-  Map<String, List<List<List<Offset>>>> hits = {}; // не сохранен
+  Map<String, List<List<List<Offset>>>> hits = {};
 
-  // не сохранен, в таблице находиться индекс hits, который отвечает за ячейку или -1, если мы вводили данные с клавиатуры
+  // в таблице находиться индекс hits, который отвечает за ячейку или -1, если мы вводили данные с клавиатуры
   // список: дистанция, строка таблицы, мишень
   Map<String, List<List<List<Offset>>>> valueByTarget = {};
   List<String> sportsmen = [];
@@ -193,6 +195,8 @@ class Data {
 
   Future<void> removeTable(String name_note) async {
     tables.remove(name_note);
+    hits.remove(name_note);
+    valueByTarget.remove(name_note);
     FirebaseFirestore.instance.collection('tables').doc(name_note).delete();
     await save();
   }
@@ -205,7 +209,26 @@ class Data {
           .toList())
           .toList();
       tables.remove(old_name_note);
+
+      hits[new_name_note] = hits[old_name_note]!
+          .map((list2) => list2
+          .map((list1) => list1
+          .map((o) => Offset(o.dx, o.dy))
+          .toList())
+          .toList())
+          .toList();
+      hits.remove(old_name_note);
+
+      valueByTarget[new_name_note] = valueByTarget[old_name_note]!
+          .map((list2) => list2
+          .map((list1) => list1
+          .map((o) => Offset(o.dx, o.dy))
+          .toList())
+          .toList())
+          .toList();
+      valueByTarget.remove(old_name_note);
     }
+
     await save();
   }
 
@@ -367,11 +390,12 @@ class Data {
   }
 
 
-
   Future<void> load() async {
     tables.clear();
     sportsmen.clear();
     coaches.clear();
+
+    minRequiredVersion = (await FirebaseFirestore.instance.collection('version').doc('minRequiredVersion').get()).data()?['data'] as String;
 
     final tablesFuture = FirebaseFirestore.instance.collection(token).doc('tables').get();
     final sportsmenFuture = FirebaseFirestore.instance.collection(token).doc('sportsmen').get();

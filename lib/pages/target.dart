@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
+import 'dart:math';
 
 String calculateScore(Offset hit, Size size, double width, double whichTarget) {
   final center = size.center(Offset.zero);
@@ -115,6 +116,30 @@ class _HitsPainter extends CustomPainter {
     for (final hit in hits) {
       canvas.drawCircle(hit, sizeHits, hitPaint);
     }
+
+    if (hits.isNotEmpty) {
+      final meanX = hits.map((h) => h.dx).reduce((a, b) => a + b) / hits.length;
+      final meanY = hits.map((h) => h.dy).reduce((a, b) => a + b) / hits.length;
+      final mean = Offset(meanX, meanY);
+
+      final meanCrossPaint = Paint();
+      meanCrossPaint.color = Colors.green;
+      meanCrossPaint.strokeWidth = 3.0;
+      const crossSize = 7.0;
+
+      canvas.drawLine(
+        mean.translate(-crossSize, -crossSize),
+        mean.translate(crossSize, crossSize),
+        meanCrossPaint,
+      );
+      canvas.drawLine(
+        mean.translate(crossSize, -crossSize),
+        mean.translate(-crossSize, crossSize),
+        meanCrossPaint,
+      );
+    }
+
+
 
     if (currentTap != null && !isView) {
       final crossPaint = Paint();

@@ -3,6 +3,8 @@ import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
 import 'package:flutter/services.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -34,6 +36,47 @@ class _HomeState extends State<Home> {
     '12': 'Декабрь',
   };
 
+  Future<void> checkVersionAndNotify(BuildContext context) async {
+    final info = await PackageInfo.fromPlatform();
+    final currentVersion = info.version;
+
+    if (_isVersionLessOrEqual(currentVersion, sl<Data>().minRequiredVersion)) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('В RuStore вышло обновление!', style: TextStyle(fontSize: 16),),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton (
+                  onPressed: () async {
+                    final Uri url = Uri.parse('https://www.rustore.ru/catalog/app/com.mathew.archerydiary');
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                    Navigator.pop(context);
+                  },
+
+                  child: Text('Обновиться'),
+                ),
+              ],
+            )
+          ],
+        ),
+      );
+    }
+  }
+
+  bool _isVersionLessOrEqual(String v1, String v2) {
+    final a = v1.split('.').map(int.parse).toList();
+    final b = v2.split('.').map(int.parse).toList();
+
+    for (int i = 0; i < 3; i++) {
+      if (a[i] < b[i]) return true;
+      if (a[i] > b[i]) return false;
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +89,16 @@ class _HomeState extends State<Home> {
       });
 
       isVisible = await sl<Data>().loadIsVisibleNotes();
+
+      if (sl<Data>().notification_about_update) {
+        checkVersionAndNotify(context);
+        sl<Data>().notification_about_update = false;
+      }
     });
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //
+    // });
   }
 
   List<String> validDistance() {
@@ -165,26 +217,27 @@ class _HomeState extends State<Home> {
               Padding(
                 padding: EdgeInsets.only(left: 10, right: 0),
                 child: Row(
+
                   children: [
                     Text(
                       '${current_notes[index].split('_')[4]}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' + ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: TextStyle(color: Colors.black, fontSize: 15),
                     ),
                     Text(
                       '${current_notes[index].split('_')[5]}',
-                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       ' = ',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: TextStyle(color: Colors.black, fontSize: 15),
                     ),
                     Text(
                       '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                     ),
 
                     PopupMenuButton<String>(
@@ -222,7 +275,7 @@ class _HomeState extends State<Home> {
                                             required int currentLength,
                                             required int? maxLength,
                                             required bool isFocused,
-                                          }) => null, // убираем надпись maxLength
+                                          }) => null,
                                       decoration: InputDecoration(
                                         hintText: 'Название',
                                         hintStyle: TextStyle(fontSize: 23, color: Colors.grey),
@@ -365,8 +418,8 @@ class _HomeState extends State<Home> {
               ),
             ),
           ),
-          ListView.builder(
 
+          ListView.builder(
             itemCount: current_notes.length,
             itemBuilder: (context, index) {
               final monthHeader = getMonthHeader(index);

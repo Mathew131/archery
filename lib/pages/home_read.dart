@@ -177,23 +177,23 @@ class _HomeReadState extends State<HomeRead> {
                       children: [
                         Text(
                           '${current_notes[index].split('_')[4]}',
-                          style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: current_notes[index].split('_')[6] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           ' + ',
-                          style: TextStyle(color: Colors.black, fontSize: 16),
+                          style: TextStyle(color: Colors.black, fontSize: 15),
                         ),
                         Text(
                           '${current_notes[index].split('_')[5]}',
-                          style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           ' = ',
-                          style: TextStyle(color: Colors.black, fontSize: 16),
+                          style: TextStyle(color: Colors.black, fontSize: 15),
                         ),
                         Text(
                           '${int.parse(current_notes[index].split('_')[4]) + int.parse(current_notes[index].split('_')[5])}',
-                          style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: current_notes[index].split('_')[6] == 'true' && current_notes[index].split('_')[7] == 'true' ? Color(0xFF4c8f28) : Colors.red, fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

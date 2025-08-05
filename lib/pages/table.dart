@@ -306,6 +306,7 @@ class _TablePageState extends State<TablePage> {
               final score = calculateScore(pos, Size(220, 220), 220, 5);
               int pred_currentI = currentI;
               await insertText(context, score);
+              // print('${sl<Data>().current_name} | ${sl<Data>().valueByTarget[sl<Data>().current_name]} -------------------------------');
               sl<Data>().valueByTarget[sl<Data>().current_name]![curTable][pred_currentI][curJ] = sl<Data>().hits[sl<Data>().current_name]![curTable][curJ].last;
             },
             currentTable: curTable,
@@ -861,7 +862,6 @@ class _TablePageState extends State<TablePage> {
                   ] else SizedBox(height: 24),
 
 
-
                   if (sl<Data>().current_name.split('_')[1] == '18м  ') ... [
                     buildTarget18(table, 0, true),
                     buildTarget18(table, 1, true),
@@ -869,6 +869,7 @@ class _TablePageState extends State<TablePage> {
                   ] else if (sl<Data>().current_name.split('_')[1] == '30м  ' || sl<Data>().current_name.split('_')[1] == '50м  ') ... [
                     buildMediumTarget(table, true),
                   ] else buildBigTarget(table, true),
+
                 ],
 
                 SizedBox(height: 308),
