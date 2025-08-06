@@ -12,10 +12,11 @@ import 'package:archery/pages/all_notes.dart';
 import 'package:archery/pages/enter.dart';
 import 'package:archery/pages/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:archery/pages/game.dart';
 
 Future<Widget> createMainApp() async {
   await Firebase.initializeApp();
-  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
+  FirebaseFirestore.instance.settings = Settings(persistenceEnabled: true);
 
   setupDI();
 
@@ -33,6 +34,7 @@ Future<Widget> createMainApp() async {
       '/sportsmen': (contest) => Sportsmen(),
       '/home': (context) => Home(),
       '/table': (context) => TablePage(),
+      '/game': (c) => GameScreen(),
     },
   );
 }
