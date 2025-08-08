@@ -21,15 +21,15 @@ class GameScreen extends StatelessWidget {
 class AimGuide extends PositionComponent {
   Vector2 start;
   Vector2 end;
-  final double maxLen;
-  final double step;
-  final double radius;
+  int cntDot;
+  double step;
+  double radius;
 
   AimGuide({
     required this.start,
     required this.end,
-    this.maxLen = 300,
-    this.step   = 20,
+    this.cntDot = 15,
+    this.step = 20,
     this.radius = 3,
   }) {
     anchor = Anchor.topLeft;
@@ -38,42 +38,109 @@ class AimGuide extends PositionComponent {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+
     final paint = Paint()..color = Colors.black54;
     final dir = end - start;
+
+    double _speed_x = dir.x * 3.5;
+    double _speed_y = -dir.y * 3.5;
+
     if (dir.length == 0) return;
+    Vector2 p = start.clone();
     final unit = dir.normalized();
 
-    for (double d = 10; d < maxLen; d += step) {
-      final p = start + unit * d;
+    for (int i = 0; i < cntDot; ++i) {
       canvas.drawCircle(Offset(p.x, p.y), radius, paint);
+      p.x += unit.x * step;
+      p.y = start.y - (_speed_y/_speed_x) * (p.x - start.x) + (400/(2 * pow(_speed_x, 2))) * pow(p.x - start.x, 2);
     }
   }
 }
 
-
-
 class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
   AimGuide? _guide;
+  late Archer _archer;
+  Random _rnd = Random();
+  late Timer _targetTimer;
+  int score = 0;
+  int cnt_targets = 0;
+
+  @override
+  Color backgroundColor() => Colors.white;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    _archer = Archer(position: Vector2(200, 500));
+    add(_archer);
+
+    _targetTimer = Timer(1, onTick: _spawnTarget, repeat: true);
+
+    add(Wall(position: Vector2(100, 300), size: Vector2(100, 10)));
+  }
+
+  void _spawnTarget() {
+    if (cnt_targets <= 9) {
+      final pos = Vector2(
+        _rnd.nextDouble() * (size.x - 80) + 40,
+        _rnd.nextDouble() * (size.y / 2) + 40,
+      );
+      add(Target(position: pos));
+      cnt_targets++;
+    }
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _targetTimer.update(dt);
+  }
+
+  void onTargetHit(Target Target) {
+    score++;
+    Target.removeFromParent();
+    cnt_targets--;
+  }
+
+  // управление guide
 
   @override
   bool onDragStart(DragStartEvent event) {
+    Vector2 real_touch = event.canvasPosition;
+    Vector2 dir = real_touch - _archer.position;
+    dir.x *= -1;
+    dir.y *= -1;
+    Vector2 img_touch = _archer.position + dir;
+
     _guide = AimGuide(
       start: _archer.position.clone(),
-      end:   event.canvasPosition,
+      end: img_touch.clone(),
     );
+
     add(_guide!);
+
+    _archer.tensionAnimation();
     return true;
   }
 
   @override
   bool onDragUpdate(DragUpdateEvent event) {
-    _guide?.end = event.canvasEndPosition;
+    Vector2 real_touch = event.canvasEndPosition;
+    Vector2 dir = real_touch - _archer.position;
+    dir.x *= -1;
+    dir.y *= -1;
+    _archer.angle = atan2(dir.y, dir.x) + pi/4;
+    Vector2 img_touch = _archer.position + dir;
+
+    _guide?.end = img_touch.clone();
     return true;
   }
 
   @override
   bool onDragEnd(DragEndEvent event) {
     if (_guide != null) {
+      _archer.playShootAnimation();
       add(Arrow(start: _archer.position, target: _guide!.end));
       _guide!.removeFromParent();
       _guide = null;
@@ -87,131 +154,161 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     _guide = null;
     return true;
   }
-
-
-  @override
-  Color backgroundColor() => Colors.white;
-
-  late final Archer _archer;
-  final _rnd = Random();
-  late final Timer _appleTimer;
-  int score = 0;
-  int cnt_apples = 0;
-
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-
-    @override
-    Color backgroundColor() => Colors.white;
-
-    final startPos = Vector2(size.x / 2 + 25, size.y - 60);
-    _archer = Archer(position: startPos);
-    add(_archer);
-
-    _appleTimer = Timer(1, onTick: _spawnApple, repeat: true);
-  }
-
-  void _spawnApple() {
-    if (cnt_apples <= 9) {
-      final pos = Vector2(
-        _rnd.nextDouble() * (size.x - 80) + 40,
-        _rnd.nextDouble() * (size.y / 2) + 40,
-      );
-      add(Apple(position: pos));
-      cnt_apples++;
-    }
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-    _appleTimer.update(dt);
-  }
-
-  @override
-  bool onTapDown(TapDownEvent event) {
-    add(Arrow(start: _archer.position, target: event.canvasPosition));
-    return true;
-  }
-
-  void onAppleHit(Apple apple) {
-    score++;
-    apple.removeFromParent();
-    cnt_apples--;
-  }
 }
 
-class Archer extends PositionComponent with CollisionCallbacks {
-  Archer({required Vector2 position}) {
-    this.position = position;
-    size = Vector2(50, 50);
-    anchor = Anchor.center;
-  }
-
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
-    final svgData = await Svg.load('bow-and-arrow.svg');
-    add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center));
-    angle = -pi / 4;
+class Wall extends RectangleComponent with CollisionCallbacks {
+  Wall({
+    required Vector2 position,
+    required Vector2 size,
+    Color color = Colors.grey,
+  }) : super(
+    position: position,
+    size: size,
+    paint: Paint()..color = color,
+    anchor: Anchor.topLeft,
+  ) {
     add(RectangleHitbox());
   }
 }
 
-class Apple extends PositionComponent with CollisionCallbacks {
-  Apple({required Vector2 position}) {
+class Archer extends PositionComponent with CollisionCallbacks {
+
+
+  Archer({required Vector2 position}) {
     this.position = position;
-    size = Vector2.all(30);
+    size = Vector2(80.0, 80.0);
+    anchor = Anchor.center;
+  }
+
+
+  late List<SvgComponent> frames;
+  int currentFrame = 0;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    final framePaths = [
+      'bow_0.svg',
+      'bow_1.svg',
+      'bow_2.svg',
+      'bow_3.svg',
+    ];
+
+    frames = [];
+
+    for (final path in framePaths) {
+      final svg = await Svg.load(path);
+      final component = SvgComponent(svg: svg, size: size)
+        ..anchor = Anchor.center
+        ..position = size / 2
+        ..opacity = 0.0;
+
+      frames.add(component);
+      add(component);
+    }
+
+    frames[0].opacity = 1.0;
+  }
+
+  void setFrame(int index) {
+    if (index < 0 || index >= frames.length) return;
+    frames[currentFrame].opacity = 0.0;
+    currentFrame = index;
+    frames[currentFrame].opacity = 1.0;
+  }
+
+  void tensionAnimation() async {
+    setFrame(3);
+    await Future.delayed(const Duration(milliseconds: 50));
+    setFrame(2);
+    await Future.delayed(const Duration(milliseconds: 50));
+    setFrame(1);
+  }
+
+  void playShootAnimation() async {
+    setFrame(2);
+    await Future.delayed(const Duration(milliseconds: 50));
+    setFrame(3);
+    await Future.delayed(const Duration(milliseconds: 50));
+    setFrame(0);
+  }
+}
+
+class Target extends PositionComponent with CollisionCallbacks {
+
+  Target({required Vector2 position}) {
+    this.position = position;
+    size = Vector2.all(45);
     anchor = Anchor.center;
   }
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    final svgData = await Svg.load('apple-svgrepo-com.svg');
+    final svgData = await Svg.load('balloon.svg');
     add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center));
     add(CircleHitbox(radius: 8));
   }
 }
 
-class Arrow extends PositionComponent with HasGameRef<ArcheryGame>, CollisionCallbacks {
-  final Vector2 _direction;
-  static const double _speed = 300;
+class Arrow extends PositionComponent with HasGameReference<ArcheryGame>, CollisionCallbacks {
+  Vector2 _direction;
 
   Arrow({required Vector2 start, required Vector2 target})
-      : _direction = (target - start).normalized() {
+      : _direction = target - start {
     position = start.clone();
-    size = Vector2(160, 40);
-    anchor = Anchor.centerLeft;
+
+    size = Vector2(45, 45);
+    anchor = Anchor.center;
+    _speed_x = _direction.x * 3.5;
+    _speed_y = -_direction.y * 3.5;
   }
+
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    angle = atan2(_direction.y, _direction.x) + pi / 4;
-    final svgData = await Svg.load('arrow-archery.svg');
-    add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center));
-    add(RectangleHitbox(size: Vector2(160, 40)));
+
+    final svgData = await Svg.load('arrow0.svg');
+    add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center, position: size / 2,));
+    add(CircleHitbox(radius: 15));
   }
 
+  late double _speed_x;
+  late double _speed_y;
 
   @override
   void update(double dt) {
     super.update(dt);
-    position += _direction * _speed * dt;
-    final gameSize = gameRef.size;
-    if (position.x.abs() > gameSize.x + 50 || position.y.abs() > gameSize.y + 50) {
+    _speed_y -= dt * 400;
+
+    angle = -atan2(_speed_y, _speed_x) + pi / 4;
+
+    position.x += _speed_x * dt;
+    position.y -= _speed_y * dt;
+
+    final w = game.size.x, h = game.size.y;
+
+
+    if (position.x < 0 || position.x > w - 0) {
+      removeFromParent();
+    }
+
+    if (position.y < 0 || position.y > h - 0) {
       removeFromParent();
     }
   }
-
+  
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (other is Apple) {
-      gameRef.onAppleHit(other);
+    if (other is Target) {
+      game.onTargetHit(other);
+      // removeFromParent();
+    } else if (other is Wall) {
       removeFromParent();
     }
+
     super.onCollisionStart(intersectionPoints, other);
   }
 }
