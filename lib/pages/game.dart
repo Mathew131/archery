@@ -5,6 +5,9 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
+import 'package:archery/data/levels.dart';
+
+late Vector2 sizeScreen;
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -61,46 +64,97 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
   AimGuide? _guide;
   late Archer _archer;
   Random _rnd = Random();
-  late Timer _targetTimer;
+  // late Timer _targetTimer;
   int score = 0;
   int cnt_targets = 0;
 
   @override
   Color backgroundColor() => Colors.white;
 
-  @override
-  Future<void> onLoad() async {
-    await super.onLoad();
 
-    _archer = Archer(position: Vector2(200, 500));
-    add(_archer);
+  int _currentLevel = 0;
 
-    _targetTimer = Timer(1, onTick: _spawnTarget, repeat: true);
+  void loadLevel(int i) {
+    _currentLevel = i;
 
-    add(Wall(position: Vector2(100, 300), size: Vector2(100, 10)));
-  }
+    for (final w in children.whereType<Wall>().toList()) {
+      w.removeFromParent();
+    }
+    for (final t in children.whereType<Target>().toList()) {
+      t.removeFromParent();
+      // cnt_targets--;
+    }
 
-  void _spawnTarget() {
-    if (cnt_targets <= 9) {
-      final pos = Vector2(
-        _rnd.nextDouble() * (size.x - 80) + 40,
-        _rnd.nextDouble() * (size.y / 2) + 40,
-      );
-      add(Target(position: pos));
+    final lvl = kLevels[i];
+
+    for (final w in lvl.walls) {
+      add(Wall(position: w.pos, size: w.size));
+    }
+
+    for (final t in lvl.targets) {
+      add(Target(position: t.pos, type_: t.type, velocity_: t.velocity, circleRadius_: t.circleRadius_, angularSpeed_: t.angularSpeed_));
       cnt_targets++;
     }
   }
 
+  void nextLevel() {
+    loadLevel((_currentLevel + 1) % kLevels.length);
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    sizeScreen = size.clone();
+
+    _archer = Archer(position: Vector2(190, sizeScreen.y - 150));
+    add(_archer);
+
+    loadLevel(0);
+
+    // print('${size.x} ${size.y}');
+  }
+
+  // @override
+  // Future<void> onLoad() async {
+  //   await super.onLoad();
+  //
+  //   _archer = Archer(position: Vector2(190, 550));
+  //   add(_archer);
+  //
+  //   // _targetTimer = Timer(1, onTick: _spawnTarget, repeat: true);
+  //
+  //   // add(Wall(position: Vector2(120, 360), size: Vector2(240, 10)));
+  //   add(Wall(position: Vector2(280, 240), size: Vector2(10,  70)));
+  //   add(Target(position: Vector2(120, 300), type_: 2, velocity_: Vector2(100, 100))); // не совсем по диагонали, но может это выделить в отдельны тип
+  //   add(Target(position: Vector2(250, 200), type_: 1, velocity_: Vector2(200, 0)));
+  //   add(Target(position: Vector2(260, 260), type_: 0, velocity_: Vector2(0, 300)));
+  //
+  // }
+
+  // void _spawnTarget() {
+  //   if (cnt_targets <= 9) {
+  //     final pos = Vector2(
+  //       _rnd.nextDouble() * (size.x - 80) + 40,
+  //       _rnd.nextDouble() * (size.y / 2) + 40,
+  //     );
+  //     add(Target(position: pos));
+  //     cnt_targets++;
+  //   }
+  // }
+
   @override
   void update(double dt) {
     super.update(dt);
-    _targetTimer.update(dt);
+    // _targetTimer.update(dt);
   }
 
   void onTargetHit(Target Target) {
     score++;
     Target.removeFromParent();
     cnt_targets--;
+    if (cnt_targets == 0) {
+      nextLevel();
+    }
   }
 
   // управление guide
@@ -121,6 +175,8 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     add(_guide!);
 
     _archer.tensionAnimation();
+    // nextLevel();
+    // print('${_currentLevel}');
     return true;
   }
 
@@ -172,8 +228,6 @@ class Wall extends RectangleComponent with CollisionCallbacks {
 }
 
 class Archer extends PositionComponent with CollisionCallbacks {
-
-
   Archer({required Vector2 position}) {
     this.position = position;
     size = Vector2(80.0, 80.0);
@@ -236,11 +290,28 @@ class Archer extends PositionComponent with CollisionCallbacks {
 }
 
 class Target extends PositionComponent with CollisionCallbacks {
+  Vector2 velocity = Vector2(0, 100);
+  int type = 0;
 
-  Target({required Vector2 position}) {
+  double angle = 0; // текущий угол в радианах
+  double circleRadius = 50; // радиус окружности
+  Vector2 circleCenter = Vector2.zero(); // центр вращения
+  double angularSpeed = 1.5; // радиан/сек
+
+
+  Target({required Vector2 position, required int type_, required Vector2 velocity_, required double circleRadius_, required double angularSpeed_}) {
     this.position = position;
+    type = type_;
+    velocity = velocity_;
     size = Vector2.all(45);
     anchor = Anchor.center;
+    circleRadius = circleRadius_;
+    angularSpeed = angularSpeed_;
+
+
+    if (type == 3) {
+      circleCenter = position.clone();
+    }
   }
 
   @override
@@ -248,7 +319,48 @@ class Target extends PositionComponent with CollisionCallbacks {
     await super.onLoad();
     final svgData = await Svg.load('balloon.svg');
     add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center));
-    add(CircleHitbox(radius: 8));
+    add(CircleHitbox(radius: 16)
+      // ..paint.color = const Color(0x5500FF00)
+      // ..renderShape = true
+      ..position = Vector2(-16, -22),
+    );
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    if (type == 0) {
+      position.y += velocity.y * dt;
+
+      if (position.y < 45 || position.y > sizeScreen.y - 250) {
+        velocity.y = -velocity.y;
+      }
+    } else if (type == 1) {
+      position.x += velocity.x * dt;
+      if (position.x < 45 || position.x > sizeScreen.x) {
+        velocity.x = -velocity.x;
+      }
+    } else if (type == 2) {
+      position.x += velocity.x * dt;
+      position.y += velocity.y * dt;
+
+      if (position.y < 45 || position.y > sizeScreen.y - 250) {
+        velocity.x = -velocity.x;
+        velocity.y = -velocity.y;
+      }
+      if (position.x < 45 || position.x > sizeScreen.x) {
+        velocity.x = -velocity.x;
+        velocity.y = -velocity.y;
+      }
+    } else if (type == 3) {
+      angle += angularSpeed * dt;
+
+      position = Vector2(
+        circleCenter.x + circleRadius * cos(angle),
+        circleCenter.y + circleRadius * sin(angle),
+      );
+    }
   }
 }
 
@@ -261,8 +373,8 @@ class Arrow extends PositionComponent with HasGameReference<ArcheryGame>, Collis
 
     size = Vector2(45, 45);
     anchor = Anchor.center;
-    _speed_x = _direction.x * 3.5;
-    _speed_y = -_direction.y * 3.5;
+    _speed_x = min(_direction.x * 5, 650);
+    _speed_y = min(-_direction.y * 5, 650);
   }
 
 
@@ -272,7 +384,11 @@ class Arrow extends PositionComponent with HasGameReference<ArcheryGame>, Collis
 
     final svgData = await Svg.load('arrow0.svg');
     add(SvgComponent(svg: svgData, size: size, anchor: Anchor.center, position: size / 2,));
-    add(CircleHitbox(radius: 15));
+    add(CircleHitbox(radius: 5)
+      // ..paint.color = const Color(0x550000FF)
+      // ..renderShape = true
+      ..position = Vector2(31, 4),
+    );
   }
 
   late double _speed_x;
