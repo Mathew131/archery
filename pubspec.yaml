@@ -96,6 +96,12 @@ flutter:
     - assets/bow_3.svg
     - assets/basketball.svg
     - assets/balloon.svg
+    - assets/quiver_0_arrows.svg
+    - assets/quiver_1_arrows.svg
+    - assets/quiver_2_arrows.svg
+    - assets/quiver_3_arrows.svg
+    - assets/quiver_4_arrows.svg
+    - assets/quiver_5_arrows.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

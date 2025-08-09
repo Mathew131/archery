@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flame/components.dart';
 
 class Data {
   String tokenKey = 'auth_token';
@@ -22,6 +23,7 @@ class Data {
   String current_name = '';
   late int cnt_ser;
   late int cnt_shoot;
+  late Vector2 sizeGameScreen;
 
   // сохраняем в локальную память 
   Future<void> saveIsVisibleNotes(Map<String, bool> isVisible) async {

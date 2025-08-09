@@ -6,8 +6,9 @@ import 'package:flame/game.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:archery/data/levels.dart';
-
-late Vector2 sizeScreen;
+import 'package:archery/data/di.dart';
+import 'package:archery/data/data.dart';
+import 'package:flutter_svg/flutter_svg.dart' as flutter_svg;
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -16,7 +17,28 @@ class GameScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Игра')),
-      body: GameWidget(game: ArcheryGame()),
+      body: Stack(
+        children: [
+          GameWidget(game: ArcheryGame()),
+          Positioned(
+            left: 70,
+            bottom: 110,
+            child: flutter_svg.SvgPicture.asset(
+              // assets/quiver_3_arrows.svg',
+              'assets/quiver_5_arrows.svg',
+              // 'assets/many_arrow.svg',
+              width: 65,
+              height: 65,
+              // color: Colors.white,
+            ),
+          ),
+          Positioned(
+            left: 95,
+            bottom: 175,
+            child: Text('16'),
+          ),
+        ],
+      )
     );
   }
 }
@@ -67,6 +89,7 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
   // late Timer _targetTimer;
   int score = 0;
   int cnt_targets = 0;
+  int cnt_arrows = 10;
 
   @override
   Color backgroundColor() => Colors.white;
@@ -92,7 +115,7 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     }
 
     for (final t in lvl.targets) {
-      add(Target(position: t.pos, type_: t.type, velocity_: t.velocity, circleRadius_: t.circleRadius_, angularSpeed_: t.angularSpeed_));
+      add(Target(t.position_, t.type_, t.velocity_, t.circleRadius_, t.angularSpeed_, t.angle_, t.period_triangle_, t.left_, t.right_, t.bottom_, t.top_));
       cnt_targets++;
     }
   }
@@ -101,17 +124,16 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     loadLevel((_currentLevel + 1) % kLevels.length);
   }
 
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    sizeScreen = size.clone();
+    sl<Data>().sizeGameScreen = size.clone();
 
-    _archer = Archer(position: Vector2(190, sizeScreen.y - 150));
+    _archer = Archer(position: Vector2(190, sl<Data>().sizeGameScreen.y - 150));
     add(_archer);
 
     loadLevel(0);
-
-    // print('${size.x} ${size.y}');
   }
 
   // @override
@@ -152,6 +174,7 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     score++;
     Target.removeFromParent();
     cnt_targets--;
+    cnt_arrows++;
     if (cnt_targets == 0) {
       nextLevel();
     }
@@ -198,6 +221,8 @@ class ArcheryGame extends FlameGame with HasCollisionDetection, DragCallbacks {
     if (_guide != null) {
       _archer.playShootAnimation();
       add(Arrow(start: _archer.position, target: _guide!.end));
+      cnt_arrows--;
+
       _guide!.removeFromParent();
       _guide = null;
     }
@@ -290,28 +315,28 @@ class Archer extends PositionComponent with CollisionCallbacks {
 }
 
 class Target extends PositionComponent with CollisionCallbacks {
-  Vector2 velocity = Vector2(0, 100);
-  int type = 0;
+  Vector2 velocity;
+  int type;
+  double angle; // текущий угол в радианах
+  double circleRadius; // радиус окружности
+  late Vector2 circleCenter; // центр вращения
+  double angularSpeed; // радиан/сек, угловая скорость
+  double period_triangle;
+  double t = 0;
+  double left;
+  double right;
+  double top;
+  double bottom;
 
-  double angle = 0; // текущий угол в радианах
-  double circleRadius = 50; // радиус окружности
-  Vector2 circleCenter = Vector2.zero(); // центр вращения
-  double angularSpeed = 1.5; // радиан/сек
 
+  Target(Vector2 position, this.type, this.velocity, this.circleRadius, this.angularSpeed, this.angle, this.period_triangle,
+    this.left, this.right, this.bottom, this.top) {
 
-  Target({required Vector2 position, required int type_, required Vector2 velocity_, required double circleRadius_, required double angularSpeed_}) {
     this.position = position;
-    type = type_;
-    velocity = velocity_;
+    circleCenter = position.clone();
+
     size = Vector2.all(45);
     anchor = Anchor.center;
-    circleRadius = circleRadius_;
-    angularSpeed = angularSpeed_;
-
-
-    if (type == 3) {
-      circleCenter = position.clone();
-    }
   }
 
   @override
@@ -326,6 +351,8 @@ class Target extends PositionComponent with CollisionCallbacks {
     );
   }
 
+  bool flag = true;
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -333,26 +360,31 @@ class Target extends PositionComponent with CollisionCallbacks {
     if (type == 0) {
       position.y += velocity.y * dt;
 
-      if (position.y < 45 || position.y > sizeScreen.y - 250) {
+      if (position.y < bottom + 45 || position.y > top) {
         velocity.y = -velocity.y;
       }
     } else if (type == 1) {
       position.x += velocity.x * dt;
-      if (position.x < 45 || position.x > sizeScreen.x) {
+      if (position.x < left + 45 || position.x > right) {
         velocity.x = -velocity.x;
       }
     } else if (type == 2) {
       position.x += velocity.x * dt;
       position.y += velocity.y * dt;
 
-      if (position.y < 45 || position.y > sizeScreen.y - 250) {
+      if (position.y < 45 || position.y > sl<Data>().sizeGameScreen.y - 250) {
         velocity.x = -velocity.x;
         velocity.y = -velocity.y;
       }
-      if (position.x < 45 || position.x > sizeScreen.x) {
+
+      if (position.x < left + 45 || position.x > right) {
         velocity.x = -velocity.x;
         velocity.y = -velocity.y;
       }
+      // if (position.x < 45 || position.x > sl<Data>().sizeGameScreen.x) {
+      //   velocity.x = -velocity.x;
+      //   velocity.y = -velocity.y;
+      // }
     } else if (type == 3) {
       angle += angularSpeed * dt;
 
@@ -360,6 +392,24 @@ class Target extends PositionComponent with CollisionCallbacks {
         circleCenter.x + circleRadius * cos(angle),
         circleCenter.y + circleRadius * sin(angle),
       );
+    } else if (type == 4) {
+      position.x += velocity.x * dt;
+      position.y += velocity.y * dt;
+
+      t++;
+      if (t == period_triangle) {
+        velocity.y = -velocity.y;
+        t = 0;
+      }
+
+      // вверх не вылезаем
+
+      if (position.x > sl<Data>().sizeGameScreen.x) {
+        position.x -= sl<Data>().sizeGameScreen.x - 45;
+      }
+      if (position.x < 45) {
+        position.x += sl<Data>().sizeGameScreen.x - 45;
+      }
     }
   }
 }
