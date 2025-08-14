@@ -1,11 +1,20 @@
 import 'package:flame/components.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/data/data.dart';
+import 'dart:math';
 
 class WallSpec {
   final Vector2 pos;
   final Vector2 size;
-  WallSpec(this.pos, this.size);
+  final String type;
+  final double angle;
+  WallSpec(this.pos, this.size, this.type, this.angle);
+}
+
+class WallSpecCenter {
+  final Vector2 pos;
+  final Vector2 size;
+  WallSpecCenter(this.pos, this.size);
 }
 
 class TargetSpec {
@@ -51,13 +60,26 @@ class LevelSpec {
 final kLevels = <LevelSpec>[
   LevelSpec(
     walls: [
-      WallSpec(Vector2(sl<Data>().sizeGameScreen.x / 2.5, sl<Data>().sizeGameScreen.y / 6.8), Vector2(70, 10)),
+      // WallSpec(Vector2(sl<Data>().sizeGameScreen.x / 2 - 60, sl<Data>().sizeGameScreen.y / 6.8), Vector2(100, 40), 'left', 0),
+      WallSpec(Vector2(-23, sl<Data>().sizeGameScreen.y / 6), Vector2(100, 88), 'green_center', 0),
+      WallSpec(Vector2(50, sl<Data>().sizeGameScreen.y / 6), Vector2(100, 88), 'green_3', 0),
+      WallSpec(Vector2(sl<Data>().sizeGameScreen.x - 150, sl<Data>().sizeGameScreen.y / 6), Vector2(100, 88), 'green_end', 0),
+      WallSpec(Vector2(sl<Data>().sizeGameScreen.x - 73, sl<Data>().sizeGameScreen.y / 6), Vector2(100, 88), 'green_center', 0),
     ],
     targets: [
+      // TargetSpec(position: Vector2(45, sl<Data>().sizeGameScreen.y / 7), type: 1, velocity: Vector2(200, 0), left: 0, right: sl<Data>().sizeGameScreen.x/2),
+
+      TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 2, sl<Data>().sizeGameScreen.y / 1.5), type: 1, velocity: Vector2(100, -100), left: 0, right: sl<Data>().sizeGameScreen.x/2),
+      TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 2 - 50, sl<Data>().sizeGameScreen.y / 1.5), type: 1, velocity: Vector2(100, -100), left: 0, right: sl<Data>().sizeGameScreen.x/2),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 2 + 50, sl<Data>().sizeGameScreen.y / 1.5), type: 1, velocity: Vector2(100, -100), left: 0, right: sl<Data>().sizeGameScreen.x/2),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x, sl<Data>().sizeGameScreen.y / 2), type: 1, velocity: Vector2(200, 0), left: 0, right: sl<Data>().sizeGameScreen.x/2),
+
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 2 + 45, sl<Data>().sizeGameScreen.y / 7), type: 1, velocity: Vector2(200, 0), left: sl<Data>().sizeGameScreen.x/2, right: sl<Data>().sizeGameScreen.x),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 3), type: 4, velocity: Vector2(200, 200), period_triangle: 20),
       // может как-то укоротить position
-      TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 2), type: 1, velocity: Vector2(200, 0), left: 0, right: sl<Data>().sizeGameScreen.x),
-      TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 2.5), type: 1, velocity: Vector2(-100, 0), left: 0, right: sl<Data>().sizeGameScreen.x),
-      TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 5), type: 3, circleRadius: 80, angularSpeed: 1.5, angle: 0),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 2), type: 1, velocity: Vector2(200, 0), left: 0, right: sl<Data>().sizeGameScreen.x),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 2.5), type: 1, velocity: Vector2(-100, 0), left: 0, right: sl<Data>().sizeGameScreen.x),
+      // TargetSpec(position: Vector2(sl<Data>().sizeGameScreen.x / 1.8, sl<Data>().sizeGameScreen.y / 6.8 + 20 + 22.5), type: 3, circleRadius: 85, angularSpeed: 1.5, angle: 0),
     ],
   ),
 
@@ -81,8 +103,11 @@ final kLevels = <LevelSpec>[
 
   LevelSpec(
     walls: [
-      WallSpec(Vector2(0, sl<Data>().sizeGameScreen.y / 7), Vector2(110, 10)),
-      WallSpec(Vector2(sl<Data>().sizeGameScreen.x - 100, sl<Data>().sizeGameScreen.y / 7), Vector2(100, 10)),
+      WallSpec(Vector2(-70, sl<Data>().sizeGameScreen.y / 6.8), Vector2(100, 40), 'left', 0),
+      WallSpec(Vector2(30, sl<Data>().sizeGameScreen.y / 6.8), Vector2(100, 40), 'right', 0),
+
+      WallSpec(Vector2(sl<Data>().sizeGameScreen.x - 130, sl<Data>().sizeGameScreen.y / 6.8), Vector2(100, 40), 'left', 0),
+      WallSpec(Vector2(sl<Data>().sizeGameScreen.x - 30, sl<Data>().sizeGameScreen.y / 6.8), Vector2(100, 40), 'center', 0),
     ],
     targets: [
       TargetSpec(position: Vector2(45, sl<Data>().sizeGameScreen.y / 8), type: 1, velocity: Vector2(200, 0), left: 0, right: sl<Data>().sizeGameScreen.x/2),

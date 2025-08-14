@@ -4,6 +4,7 @@ import 'package:archery/pages/sportsmen.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/pages/profile.dart';
+import 'package:archery/pages/new_game.dart';
 
 class MainNavigation extends StatefulWidget {
   @override
@@ -26,7 +27,8 @@ class _MainNavigationState extends State<MainNavigation> {
     } else {
       switch (index) {
         case 0: return Home();
-        case 1: return Profile();
+        case 1: return GameScreen();
+        case 2: return Profile();
       }
     }
     return Center(child: Text('Неизвестная страница'));
@@ -51,6 +53,7 @@ class _MainNavigationState extends State<MainNavigation> {
       } else {
         items = [
           BottomNavigationBarItem(icon: Icon(Icons.edit_note), label: 'Запись'),
+          BottomNavigationBarItem(icon: Icon(Icons.gamepad), label: 'Игра'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Профиль'),
         ];
       }

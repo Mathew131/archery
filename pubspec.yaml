@@ -102,6 +102,26 @@ flutter:
     - assets/quiver_3_arrows.svg
     - assets/quiver_4_arrows.svg
     - assets/quiver_5_arrows.svg
+    - assets/images/wood_left.png
+    - assets/images/wood_center.png
+    - assets/images/wood_right.png
+    - assets/images/wood_green.png
+    - assets/images/wood_green_2.png
+    - assets/images/wood_green_3.png
+    - assets/images/wood_green_center.png
+    - assets/images/wood_green_end.png
+    - assets/images/boom.png
+    - assets/images/grass.png
+    - assets/images/duck.png
+    - assets/trajectories.json
+    - assets/images/duck_hunt_assets_1.png
+    - assets/images/duck_hunt_assets_2.png
+    - assets/images/duck_hunt_assets_3.png
+    - assets/cheese.svg
+    - assets/wood.svg
+    - assets/wood2.svg
+    - assets/wood3.svg
+    - assets/knife.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
