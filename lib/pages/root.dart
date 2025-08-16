@@ -4,7 +4,7 @@ import 'package:archery/pages/sportsmen.dart';
 import 'package:archery/data/data.dart';
 import 'package:archery/data/di.dart';
 import 'package:archery/pages/profile.dart';
-import 'package:archery/pages/new_game.dart';
+import 'package:archery/pages/game.dart';
 
 class MainNavigation extends StatefulWidget {
   @override
